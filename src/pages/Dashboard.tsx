@@ -343,24 +343,29 @@ const Index: React.FC = () => {
     }
   }, [userId]);
 
+  // Flag pour bloquer le rafraîchissement automatique pendant le jeu Triumph
+  const [isPlayingTriumph, setIsPlayingTriumph] = useState(false);
+
   // Rafraîchir les stats depuis la base (utile quand des valeurs changent côté backend)
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || isPlayingTriumph) return;
 
     refreshStatsFromDb();
 
     const intervalId = window.setInterval(() => {
-      refreshStatsFromDb();
+      if (!isPlayingTriumph) refreshStatsFromDb();
     }, 15000);
 
-    const onFocus = () => refreshStatsFromDb();
+    const onFocus = () => {
+      if (!isPlayingTriumph) refreshStatsFromDb();
+    };
     window.addEventListener('focus', onFocus);
 
     return () => {
       window.clearInterval(intervalId);
       window.removeEventListener('focus', onFocus);
     };
-  }, [userId]);
+  }, [userId, isPlayingTriumph]);
 
   const greeting = getGreeting();
 
@@ -544,6 +549,12 @@ const Index: React.FC = () => {
       setShowBlockedModal(true);
       return;
     }
+    // Activer le flag si c'est le jeu Triumph
+    if (game.id === '1') {
+      setIsPlayingTriumph(true);
+      triumphStartTimeRef.current = Date.now();
+      triumphEarningsRef.current = 0;
+    }
     setActiveGame(game);
   };
   
@@ -614,6 +625,9 @@ const Index: React.FC = () => {
     const totalEarnings = triumphEarningsRef.current;
     const durationPlayed = Math.round((Date.now() - triumphStartTimeRef.current) / 1000);
 
+    // Désactiver le flag de jeu en cours
+    setIsPlayingTriumph(false);
+
     if (userId && totalEarnings > 0) {
       try {
         // Enregistrer les gains de la partie
@@ -638,9 +652,15 @@ const Index: React.FC = () => {
             total_games_played: Number(currentStats.total_games_played) + 1,
           }).eq('user_id', userId);
         }
+
+        // Rafraîchir les stats depuis la base après la sauvegarde
+        await refreshStatsFromDb();
       } catch (error) {
         console.error('Error saving Triumph earnings:', error);
       }
+    } else {
+      // Rafraîchir quand même pour synchroniser
+      await refreshStatsFromDb();
     }
 
     // Effacer la session localStorage après sauvegarde
