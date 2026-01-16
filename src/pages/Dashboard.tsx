@@ -779,7 +779,7 @@ const Index: React.FC = () => {
           <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center">
             {greeting.text} {user?.name?.split(' ')[0] || 'Utilisateur'} ! <span className="ml-2 text-2xl">{greeting.emoji}</span>
           </h1>
-          <p className="text-muted-foreground mt-1">Voici les performances de Lumina Rewards cette semaine.</p>
+          <p className="text-muted-foreground mt-1">Voici les performances de LUMI GAMES cette semaine.</p>
         </div>
         <button
           type="button"
@@ -1417,7 +1417,7 @@ const Index: React.FC = () => {
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-md">
             <span className="text-primary-foreground font-bold text-lg">L</span>
           </div>
-          <span className="font-bold text-lg tracking-tight text-foreground">Lumina</span>
+          <span className="font-bold text-lg tracking-tight text-foreground">LUMI GAMES</span>
         </div>
         <div className="flex items-center space-x-3">
            <button className="p-2 text-muted-foreground hover:bg-secondary rounded-full relative transition-colors">
@@ -1453,7 +1453,7 @@ const Index: React.FC = () => {
                     <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg">
                       <span className="text-primary-foreground font-bold text-xl">L</span>
                     </div>
-                    <span className="font-bold text-xl tracking-tight text-foreground">Lumina</span>
+                    <span className="font-bold text-xl tracking-tight text-foreground">LUMI GAMES</span>
                  </div>
                  <button 
                    onClick={() => setIsMobileMenuOpen(false)}
@@ -1492,7 +1492,7 @@ const Index: React.FC = () => {
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg">
               <span className="text-primary-foreground font-bold text-xl">L</span>
             </div>
-            <span className="font-bold text-xl tracking-tight text-foreground">Lumina</span>
+            <span className="font-bold text-xl tracking-tight text-foreground">LUMI GAMES</span>
           </div>
 
           <nav className="space-y-2 flex-1">
