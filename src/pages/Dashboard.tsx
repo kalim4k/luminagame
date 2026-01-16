@@ -298,19 +298,96 @@ const Index: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false);
   
   // Withdrawal State
-  const [withdrawalState, setWithdrawalState] = useState<'idle' | 'loading' | 'success'>('idle');
+  const [withdrawalState, setWithdrawalState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+  const [withdrawalAmount, setWithdrawalAmount] = useState<string>('');
+  const [withdrawalPhone, setWithdrawalPhone] = useState<string>('');
+  const [withdrawalError, setWithdrawalError] = useState<string>('');
 
-  const handleWithdrawal = () => {
+  const handleWithdrawal = async () => {
+    setWithdrawalError('');
+    
+    // Validation
+    const amount = parseInt(withdrawalAmount);
+    if (!amount || amount < 2000) {
+      setWithdrawalError('Le montant minimum est de 2000 FCFA');
+      return;
+    }
+    if (amount > stats.availableBalance) {
+      setWithdrawalError('Solde insuffisant');
+      return;
+    }
+    if (!selectedPaymentMethod) {
+      setWithdrawalError('Veuillez sélectionner un moyen de paiement');
+      return;
+    }
+    if (!withdrawalPhone || withdrawalPhone.length < 8) {
+      setWithdrawalError('Veuillez entrer un numéro de téléphone valide');
+      return;
+    }
+
+    if (!userId) return;
+
     setWithdrawalState('loading');
-    setTimeout(() => {
+
+    try {
+      // Enregistrer la transaction dans la base de données
+      const { error: txError } = await supabase.from('transactions').insert({
+        user_id: userId,
+        type: 'withdrawal',
+        amount: amount,
+        provider: selectedPaymentMethod,
+        status: 'pending'
+      });
+
+      if (txError) throw txError;
+
+      // Mettre à jour les stats utilisateur
+      const { error: statsError } = await supabase
+        .from('user_stats')
+        .update({
+          available_balance: stats.availableBalance - amount,
+          total_withdrawn: stats.totalWithdrawn + amount
+        })
+        .eq('user_id', userId);
+
+      if (statsError) throw statsError;
+
+      // Mettre à jour l'état local
+      setStats(prev => ({
+        ...prev,
+        availableBalance: prev.availableBalance - amount,
+        totalWithdrawn: prev.totalWithdrawn + amount
+      }));
+
+      // Ajouter la transaction à la liste locale
+      const newTransaction: Transaction = {
+        id: crypto.randomUUID(),
+        type: 'withdrawal',
+        amount: amount,
+        date: new Date().toLocaleDateString('fr-FR', { 
+          day: 'numeric', 
+          month: 'short', 
+          year: 'numeric' 
+        }),
+        status: 'pending',
+        provider: selectedPaymentMethod
+      };
+      setTransactions(prev => [newTransaction, ...prev]);
+
       setWithdrawalState('success');
-    }, 7000);
+    } catch (error) {
+      console.error('Withdrawal error:', error);
+      setWithdrawalError('Une erreur est survenue. Veuillez réessayer.');
+      setWithdrawalState('error');
+    }
   };
 
   const closeWithdrawalPopup = () => {
     setWithdrawalState('idle');
     setSelectedPaymentMethod(null);
+    setWithdrawalAmount('');
+    setWithdrawalError('');
   };
 
   // Derived Data
@@ -646,12 +723,20 @@ const Index: React.FC = () => {
           <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
             <h3 className="text-lg font-bold text-foreground mb-4">Demander un retrait</h3>
             <div className="space-y-4">
+              {withdrawalError && (
+                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm font-medium">
+                  {withdrawalError}
+                </div>
+              )}
+              
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">Montant à retirer</label>
                 <div className="relative">
                   <input 
                     type="number" 
-                    placeholder="Min: 2000 FCFA" 
+                    placeholder="Min: 2000 FCFA"
+                    value={withdrawalAmount}
+                    onChange={(e) => setWithdrawalAmount(e.target.value)}
                     className="w-full pl-4 pr-16 py-3 bg-secondary border border-border rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all font-semibold"
                   />
                   <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">FCFA</span>
@@ -687,7 +772,8 @@ const Index: React.FC = () => {
                   <input 
                     type="tel" 
                     placeholder="07 00 00 00 00" 
-                    defaultValue={user?.phone || ''}
+                    value={withdrawalPhone || user?.phone || ''}
+                    onChange={(e) => setWithdrawalPhone(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-secondary border border-border rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all"
                   />
                 </div>
@@ -695,9 +781,10 @@ const Index: React.FC = () => {
 
               <button 
                 onClick={handleWithdrawal}
-                className="w-full py-3.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-lg transition-all mt-2"
+                disabled={withdrawalState === 'loading'}
+                className="w-full py-3.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-lg transition-all mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Confirmer le retrait
+                {withdrawalState === 'loading' ? 'Traitement en cours...' : 'Confirmer le retrait'}
               </button>
             </div>
           </div>
