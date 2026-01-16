@@ -41,6 +41,14 @@ interface TriumphGameProps {
   onTimeUpdate: (secondsUsed: number) => void;
 }
 
+const LOCALSTORAGE_KEY = 'triumph_session';
+
+interface TriumphSession {
+  earnings: number;
+  startTime: number;
+  gameId: string;
+}
+
 const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalance, initialTime, onTimeUpdate }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameStateRef = useRef<GameState>('AIMING');
@@ -60,6 +68,7 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
   const aimAngleRef = useRef<number | null>(null);
   const totalSessionEarningsRef = useRef(0);
   const isFiringRef = useRef(false);
+  const sessionIdRef = useRef<string>(crypto.randomUUID());
 
   // Timer Refs
   const lastTimeRef = useRef<number>(Date.now());
@@ -70,6 +79,34 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
   const [uiTime, setUiTime] = useState(initialTime);
   const [gameOver, setGameOver] = useState(false);
   const [timeUp, setTimeUp] = useState(false);
+
+  // Sauvegarder les gains dans localStorage
+  const saveToLocalStorage = (earnings: number) => {
+    const session: TriumphSession = {
+      earnings,
+      startTime: Date.now(),
+      gameId: sessionIdRef.current,
+    };
+    localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(session));
+  };
+
+  // Charger les gains depuis localStorage (en cas de crash précédent)
+  const loadFromLocalStorage = (): TriumphSession | null => {
+    try {
+      const data = localStorage.getItem(LOCALSTORAGE_KEY);
+      if (data) {
+        return JSON.parse(data) as TriumphSession;
+      }
+    } catch (e) {
+      console.error('Error loading triumph session:', e);
+    }
+    return null;
+  };
+
+  // Effacer le localStorage
+  const clearLocalStorage = () => {
+    localStorage.removeItem(LOCALSTORAGE_KEY);
+  };
 
   // --- Init ---
   const initGame = () => {
@@ -84,12 +121,16 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
     floatingTextsRef.current = [];
     gameStateRef.current = 'AIMING';
     isFiringRef.current = false;
+    sessionIdRef.current = crypto.randomUUID();
 
     // Timer Reset
     timeLeftRef.current = initialTime;
     setUiTime(initialTime);
     lastTimeRef.current = Date.now();
     accumulatedTimeRef.current = 0;
+
+    // Effacer toute session précédente
+    clearLocalStorage();
 
     setGameOver(false);
     setTimeUp(false);
@@ -314,6 +355,8 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
     if (frameEarnings > 0) {
       updateBalance(frameEarnings);
       totalSessionEarningsRef.current += frameEarnings;
+      // Sauvegarder dans localStorage pour persistance
+      saveToLocalStorage(totalSessionEarningsRef.current);
     }
 
     floatingTextsRef.current.forEach(ft => {
@@ -454,6 +497,31 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
       </div>
     </div>
   );
+};
+
+// Utilitaires exportés pour gérer la session depuis l'extérieur
+export const TRIUMPH_LOCALSTORAGE_KEY = 'triumph_session';
+
+export interface TriumphSessionData {
+  earnings: number;
+  startTime: number;
+  gameId: string;
+}
+
+export const getTriumphPendingEarnings = (): TriumphSessionData | null => {
+  try {
+    const data = localStorage.getItem(TRIUMPH_LOCALSTORAGE_KEY);
+    if (data) {
+      return JSON.parse(data) as TriumphSessionData;
+    }
+  } catch (e) {
+    console.error('Error loading triumph session:', e);
+  }
+  return null;
+};
+
+export const clearTriumphSession = () => {
+  localStorage.removeItem(TRIUMPH_LOCALSTORAGE_KEY);
 };
 
 export default TriumphGame;

@@ -39,7 +39,7 @@ import { RevenueChart } from '@/components/dashboard/RevenueChart';
 import { SourcesChart } from '@/components/dashboard/SourcesChart';
 import { GameCard } from '@/components/games/GameCard';
 import { GameSession } from '@/components/games/GameSession';
-import TriumphGame from '@/components/games/TriumphGame';
+import TriumphGame, { getTriumphPendingEarnings, clearTriumphSession } from '@/components/games/TriumphGame';
 import { GAMES, PAYMENT_PROVIDERS } from '@/constants';
 import { Game, Tab, UserStats, UserProfile, WeeklyDataPoint, CategoryEarning, Transaction } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -288,6 +288,56 @@ const Index: React.FC = () => {
     fetchUserData();
   }, [navigate]);
 
+  // Récupérer les gains en attente du localStorage (en cas de crash précédent)
+  useEffect(() => {
+    if (!userId) return;
+
+    const pendingSession = getTriumphPendingEarnings();
+    if (pendingSession && pendingSession.earnings > 0) {
+      // Sauvegarder les gains récupérés en base
+      const savePendingEarnings = async () => {
+        try {
+          const durationPlayed = Math.round((Date.now() - pendingSession.startTime) / 1000);
+          
+          await supabase.from('game_earnings').insert({
+            user_id: userId,
+            game_id: '1',
+            game_title: 'Triumph Game',
+            amount: pendingSession.earnings,
+            duration_played: durationPlayed,
+          });
+
+          const { data: currentStats } = await supabase
+            .from('user_stats')
+            .select('earnings_today, total_games_played')
+            .eq('user_id', userId)
+            .single();
+
+          if (currentStats) {
+            await supabase.from('user_stats').update({
+              earnings_today: Number(currentStats.earnings_today) + pendingSession.earnings,
+              total_games_played: Number(currentStats.total_games_played) + 1,
+            }).eq('user_id', userId);
+          }
+
+          // Mettre à jour le state local
+          setStats(prev => ({
+            ...prev,
+            earningsToday: prev.earningsToday + pendingSession.earnings,
+          }));
+
+          console.log(`Recovered ${pendingSession.earnings} FCFA from previous session`);
+        } catch (error) {
+          console.error('Error saving pending earnings:', error);
+        } finally {
+          clearTriumphSession();
+        }
+      };
+
+      savePendingEarnings();
+    }
+  }, [userId]);
+
   // Rafraîchir les stats depuis la base (utile quand des valeurs changent côté backend)
   useEffect(() => {
     if (!userId) return;
@@ -532,18 +582,16 @@ const Index: React.FC = () => {
           duration_played: durationPlayed,
         });
 
-        // Mettre à jour les stats utilisateur
+        // Mettre à jour les stats utilisateur (seul earnings_today augmente)
         const { data: currentStats } = await supabase
           .from('user_stats')
-          .select('balance, earnings_today, available_balance, total_games_played')
+          .select('earnings_today, total_games_played')
           .eq('user_id', userId)
           .single();
 
         if (currentStats) {
           await supabase.from('user_stats').update({
-            balance: Number(currentStats.balance) + totalEarnings,
             earnings_today: Number(currentStats.earnings_today) + totalEarnings,
-            available_balance: Number(currentStats.available_balance) + totalEarnings,
             total_games_played: Number(currentStats.total_games_played) + 1,
           }).eq('user_id', userId);
         }
@@ -551,6 +599,9 @@ const Index: React.FC = () => {
         console.error('Error saving Triumph earnings:', error);
       }
     }
+
+    // Effacer la session localStorage après sauvegarde
+    clearTriumphSession();
 
     // Reset des compteurs
     triumphEarningsRef.current = 0;
