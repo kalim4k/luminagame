@@ -393,25 +393,43 @@ const Index: React.FC = () => {
   // Game Category State
   const [selectedCategory, setSelectedCategory] = useState<string>('Tout');
 
-  // Config State
+  // Config State - Charger depuis localStorage au démarrage
   const [showApiKey, setShowApiKey] = useState(false);
-  const [config, setConfig] = useState({
-    region: 'Europe (Paris)',
-    proxyIP: '',
-    secureMode: true,
-    apiKey: '',
-    twoFactor: true
+  const [config, setConfig] = useState(() => {
+    const saved = localStorage.getItem('lumina_config');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return {
+          region: 'Europe (Paris)',
+          proxyIP: '',
+          secureMode: true,
+          apiKey: '',
+          twoFactor: true
+        };
+      }
+    }
+    return {
+      region: 'Europe (Paris)',
+      proxyIP: '',
+      secureMode: true,
+      apiKey: '',
+      twoFactor: true
+    };
   });
   const [isSaving, setIsSaving] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+  
+  // Calculer si la connexion est valide (clé API ET IP correctes)
+  const isConnected = useMemo(() => {
+    return config.apiKey === VALID_API_KEY && config.proxyIP === VALID_PROXY_IP;
+  }, [config.apiKey, config.proxyIP]);
   
   // État pour le modal de jeu bloqué
   const [showBlockedModal, setShowBlockedModal] = useState(false);
   
-  // Vérifier si les jeux sont débloqués (clé API et IP valides)
-  const isGamesUnlocked = useMemo(() => {
-    return config.apiKey === VALID_API_KEY && config.proxyIP === VALID_PROXY_IP;
-  }, [config.apiKey, config.proxyIP]);
+  // Les jeux sont débloqués seulement si connecté (les deux valeurs correctes)
+  const isGamesUnlocked = isConnected;
   
   // Withdrawal State
   const [withdrawalState, setWithdrawalState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -634,8 +652,9 @@ const Index: React.FC = () => {
   const handleSaveConfig = () => {
     setIsSaving(true);
     setTimeout(() => {
+      // Sauvegarder la config dans localStorage
+      localStorage.setItem('lumina_config', JSON.stringify(config));
       setIsSaving(false);
-      setIsConnected(true);
     }, 1500);
   };
 
