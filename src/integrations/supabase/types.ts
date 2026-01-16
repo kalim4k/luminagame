@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      game_earnings: {
+        Row: {
+          amount: number
+          created_at: string
+          duration_played: number
+          game_id: string
+          game_title: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          duration_played?: number
+          game_id: string
+          game_title: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          duration_played?: number
+          game_id?: string
+          game_title?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -42,6 +72,75 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          provider: string | null
+          status: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          provider?: string | null
+          status?: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          provider?: string | null
+          status?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_stats: {
+        Row: {
+          available_balance: number
+          balance: number
+          created_at: string
+          earnings_today: number
+          earnings_yesterday: number
+          id: string
+          total_games_played: number
+          total_withdrawn: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available_balance?: number
+          balance?: number
+          created_at?: string
+          earnings_today?: number
+          earnings_yesterday?: number
+          id?: string
+          total_games_played?: number
+          total_withdrawn?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available_balance?: number
+          balance?: number
+          created_at?: string
+          earnings_today?: number
+          earnings_yesterday?: number
+          id?: string
+          total_games_played?: number
+          total_withdrawn?: number
           updated_at?: string
           user_id?: string
         }

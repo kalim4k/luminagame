@@ -59,7 +59,7 @@ const Index: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>(Tab.DASHBOARD);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // User Stats State - Initialisé à zéro pour les nouveaux comptes
+  // User Stats State - chargé depuis Supabase
   const [stats, setStats] = useState<UserStats>({
     balance: 0,
     earningsToday: 0,
@@ -67,14 +67,15 @@ const Index: React.FC = () => {
     availableBalance: 0,
     totalWithdrawn: 0
   });
+  const [userId, setUserId] = useState<string | null>(null);
 
   // User Profile State - chargé depuis Supabase
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Charger les données utilisateur depuis Supabase
+  // Charger les données utilisateur et stats depuis Supabase
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchUserData = async () => {
       try {
         const { data: { user: authUser } } = await supabase.auth.getUser();
         
@@ -83,15 +84,17 @@ const Index: React.FC = () => {
           return;
         }
 
-        const { data: profile, error } = await supabase
+        setUserId(authUser.id);
+
+        // Charger le profil
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', authUser.id)
-          .single();
+          .maybeSingle();
 
-        if (error) {
-          console.error('Error fetching profile:', error);
-          return;
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
         }
 
         if (profile) {
@@ -103,6 +106,27 @@ const Index: React.FC = () => {
             avatarUrl: profile.avatar_url || ''
           });
         }
+
+        // Charger les stats
+        const { data: userStats, error: statsError } = await supabase
+          .from('user_stats')
+          .select('*')
+          .eq('user_id', authUser.id)
+          .maybeSingle();
+
+        if (statsError) {
+          console.error('Error fetching stats:', statsError);
+        }
+
+        if (userStats) {
+          setStats({
+            balance: Number(userStats.balance) || 0,
+            earningsToday: Number(userStats.earnings_today) || 0,
+            earningsYesterday: Number(userStats.earnings_yesterday) || 0,
+            availableBalance: Number(userStats.available_balance) || 0,
+            totalWithdrawn: Number(userStats.total_withdrawn) || 0,
+          });
+        }
       } catch (error) {
         console.error('Error:', error);
       } finally {
@@ -110,7 +134,7 @@ const Index: React.FC = () => {
       }
     };
 
-    fetchUserProfile();
+    fetchUserData();
   }, [navigate]);
 
   const greeting = getGreeting();
@@ -188,7 +212,8 @@ const Index: React.FC = () => {
     setActiveGame(game);
   };
 
-  const handleGameComplete = (reward: number) => {
+  const handleGameComplete = async (reward: number) => {
+    // Mise à jour locale immédiate
     setStats(prev => ({
       ...prev,
       balance: prev.balance + reward,
@@ -196,19 +221,100 @@ const Index: React.FC = () => {
       availableBalance: prev.availableBalance + reward
     }));
     setActiveGame(null);
+
+    // Sauvegarder en base de données
+    if (userId && activeGame) {
+      try {
+        // Enregistrer les gains de la partie
+        await supabase.from('game_earnings').insert({
+          user_id: userId,
+          game_id: activeGame.id,
+          game_title: activeGame.title,
+          amount: reward,
+          duration_played: activeGame.durationSec,
+        });
+
+        // Mettre à jour les stats utilisateur
+        const { data: currentStats } = await supabase
+          .from('user_stats')
+          .select('balance, earnings_today, available_balance, total_games_played')
+          .eq('user_id', userId)
+          .single();
+
+        if (currentStats) {
+          await supabase.from('user_stats').update({
+            balance: Number(currentStats.balance) + reward,
+            earnings_today: Number(currentStats.earnings_today) + reward,
+            available_balance: Number(currentStats.available_balance) + reward,
+            total_games_played: Number(currentStats.total_games_played) + 1,
+          }).eq('user_id', userId);
+        }
+      } catch (error) {
+        console.error('Error saving game earnings:', error);
+      }
+    }
   };
 
   const handleCloseGame = () => {
     setActiveGame(null);
   };
 
+  // Référence pour accumuler les gains du jeu Triumph
+  const triumphEarningsRef = React.useRef(0);
+  const triumphStartTimeRef = React.useRef<number>(Date.now());
+
   const handleTriumphBalanceUpdate = (amount: number) => {
+    // Mise à jour locale immédiate
     setStats(prev => ({
       ...prev,
       balance: prev.balance + amount,
       earningsToday: prev.earningsToday + amount,
       availableBalance: prev.availableBalance + amount
     }));
+    // Accumuler les gains pour la sauvegarde finale
+    triumphEarningsRef.current += amount;
+  };
+
+  // Sauvegarder les gains du jeu Triumph quand le joueur quitte
+  const handleTriumphClose = async () => {
+    const totalEarnings = triumphEarningsRef.current;
+    const durationPlayed = Math.round((Date.now() - triumphStartTimeRef.current) / 1000);
+
+    if (userId && totalEarnings > 0) {
+      try {
+        // Enregistrer les gains de la partie
+        await supabase.from('game_earnings').insert({
+          user_id: userId,
+          game_id: '1', // ID du jeu Triumph
+          game_title: 'Triumph Game',
+          amount: totalEarnings,
+          duration_played: durationPlayed,
+        });
+
+        // Mettre à jour les stats utilisateur
+        const { data: currentStats } = await supabase
+          .from('user_stats')
+          .select('balance, earnings_today, available_balance, total_games_played')
+          .eq('user_id', userId)
+          .single();
+
+        if (currentStats) {
+          await supabase.from('user_stats').update({
+            balance: Number(currentStats.balance) + totalEarnings,
+            earnings_today: Number(currentStats.earnings_today) + totalEarnings,
+            available_balance: Number(currentStats.available_balance) + totalEarnings,
+            total_games_played: Number(currentStats.total_games_played) + 1,
+          }).eq('user_id', userId);
+        }
+      } catch (error) {
+        console.error('Error saving Triumph earnings:', error);
+      }
+    }
+
+    // Reset des compteurs
+    triumphEarningsRef.current = 0;
+    triumphStartTimeRef.current = Date.now();
+    setActiveGame(null);
   };
 
   const handleSaveConfig = () => {
@@ -1035,7 +1141,7 @@ const Index: React.FC = () => {
       {/* Game Modal */}
       {activeGame && activeGame.title === 'Triumph Game' ? (
         <TriumphGame
-          onBack={handleCloseGame}
+          onBack={handleTriumphClose}
           balance={stats.balance}
           updateBalance={handleTriumphBalanceUpdate}
           initialTime={activeGame.durationSec}
