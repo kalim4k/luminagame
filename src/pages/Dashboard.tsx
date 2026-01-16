@@ -40,8 +40,8 @@ import { SourcesChart } from '@/components/dashboard/SourcesChart';
 import { GameCard } from '@/components/games/GameCard';
 import { GameSession } from '@/components/games/GameSession';
 import TriumphGame from '@/components/games/TriumphGame';
-import { GAMES, WEEKLY_DATA, CATEGORY_EARNINGS_DATA, TRANSACTIONS, PAYMENT_PROVIDERS } from '@/constants';
-import { Game, Tab, UserStats, UserProfile } from '@/types';
+import { GAMES, PAYMENT_PROVIDERS } from '@/constants';
+import { Game, Tab, UserStats, UserProfile, WeeklyDataPoint, CategoryEarning, Transaction } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 
 // Fonction pour déterminer le message de salutation selon l'heure
@@ -114,6 +114,25 @@ const Index: React.FC = () => {
   }, [navigate]);
 
   const greeting = getGreeting();
+
+  // Données vides pour les nouveaux comptes
+  const emptyWeeklyData: WeeklyDataPoint[] = [
+    { day: 'Lun', amount: 0 },
+    { day: 'Mar', amount: 0 },
+    { day: 'Mer', amount: 0 },
+    { day: 'Jeu', amount: 0 },
+    { day: 'Ven', amount: 0 },
+    { day: 'Sam', amount: 0 },
+    { day: 'Dim', amount: 0 },
+  ];
+
+  const emptyCategoryData: CategoryEarning[] = [
+    { name: 'Jeux', value: 0, color: '#6366F1' },
+    { name: 'Bonus', value: 0, color: '#10B981' },
+    { name: 'Parrainage', value: 0, color: '#F59E0B' },
+  ];
+
+  const emptyTransactions: Transaction[] = [];
 
   // Gameplay State
   const [activeGame, setActiveGame] = useState<Game | null>(null);
@@ -304,13 +323,13 @@ const Index: React.FC = () => {
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-bold text-foreground">Trafic & Revenus</h3>
           </div>
-          <RevenueChart data={WEEKLY_DATA} />
+          <RevenueChart data={emptyWeeklyData} />
         </div>
 
         <div className="bg-card p-6 rounded-2xl border border-border shadow-sm flex flex-col">
           <h3 className="text-lg font-bold text-foreground mb-2">Gains par Catégorie</h3>
           <div className="flex-1 flex items-center justify-center">
-            <SourcesChart data={CATEGORY_EARNINGS_DATA} />
+            <SourcesChart data={emptyCategoryData} />
           </div>
         </div>
       </div>
@@ -459,52 +478,60 @@ const Index: React.FC = () => {
           </div>
           
           <div className="overflow-y-auto max-h-[600px]">
-            {TRANSACTIONS.filter(tx => tx.type === 'withdrawal').map((tx) => (
-              <div key={tx.id} className="p-4 sm:p-6 border-b border-border/50 last:border-0 hover:bg-secondary/50 transition-colors flex items-center justify-between group">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-secondary flex items-center justify-center">
-                    {tx.provider && PAYMENT_PROVIDERS[tx.provider as keyof typeof PAYMENT_PROVIDERS] ? (
-                      <img 
-                        src={PAYMENT_PROVIDERS[tx.provider as keyof typeof PAYMENT_PROVIDERS]} 
-                        alt={tx.provider}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Wallet size={24} className="text-warning" />
-                    )}
+            {emptyTransactions.filter(tx => tx.type === 'withdrawal').length > 0 ? (
+              emptyTransactions.filter(tx => tx.type === 'withdrawal').map((tx) => (
+                <div key={tx.id} className="p-4 sm:p-6 border-b border-border/50 last:border-0 hover:bg-secondary/50 transition-colors flex items-center justify-between group">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-secondary flex items-center justify-center">
+                      {tx.provider && PAYMENT_PROVIDERS[tx.provider as keyof typeof PAYMENT_PROVIDERS] ? (
+                        <img 
+                          src={PAYMENT_PROVIDERS[tx.provider as keyof typeof PAYMENT_PROVIDERS]} 
+                          alt={tx.provider}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Wallet size={24} className="text-warning" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground">
+                        Retrait {tx.provider}
+                      </p>
+                      <p className="text-sm text-muted-foreground">{tx.date}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-bold text-foreground">
-                      Retrait {tx.provider}
+                  
+                  <div className="text-right">
+                    <p className="font-bold text-lg text-foreground">
+                      -{tx.amount.toLocaleString()} FCFA
                     </p>
-                    <p className="text-sm text-muted-foreground">{tx.date}</p>
+                    <div className="flex items-center justify-end text-xs font-medium mt-1">
+                      {tx.status === 'completed' && (
+                        <span className="flex items-center text-success">
+                          <CheckCircle size={12} className="mr-1" /> Succès
+                        </span>
+                      )}
+                      {tx.status === 'pending' && (
+                        <span className="flex items-center text-warning">
+                          <Clock size={12} className="mr-1" /> En attente
+                        </span>
+                      )}
+                      {tx.status === 'failed' && (
+                        <span className="flex items-center text-destructive">
+                          <XCircle size={12} className="mr-1" /> Échec
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-                
-                <div className="text-right">
-                  <p className="font-bold text-lg text-foreground">
-                    -{tx.amount.toLocaleString()} FCFA
-                  </p>
-                  <div className="flex items-center justify-end text-xs font-medium mt-1">
-                    {tx.status === 'completed' && (
-                      <span className="flex items-center text-success">
-                        <CheckCircle size={12} className="mr-1" /> Succès
-                      </span>
-                    )}
-                    {tx.status === 'pending' && (
-                      <span className="flex items-center text-warning">
-                        <Clock size={12} className="mr-1" /> En attente
-                      </span>
-                    )}
-                     {tx.status === 'failed' && (
-                      <span className="flex items-center text-destructive">
-                        <XCircle size={12} className="mr-1" /> Échec
-                      </span>
-                    )}
-                  </div>
-                </div>
+              ))
+            ) : (
+              <div className="p-12 text-center">
+                <Wallet size={48} className="mx-auto mb-4 text-muted-foreground/30" />
+                <p className="text-muted-foreground font-medium">Aucun retrait effectué</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Vos retraits apparaîtront ici</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
