@@ -236,12 +236,13 @@ const Index: React.FC = () => {
 
   const renderGames = () => (
     <div key="games" className="animate-fade-in">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
+        {/* Title hidden on mobile and tablet, visible on large screens */}
+        <div className="hidden lg:block">
           <h2 className="text-2xl font-bold text-foreground">Catalogue de Jeux</h2>
           <p className="text-muted-foreground mt-1">Jouez et gagnez des FCFA instantanément.</p>
         </div>
-        <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">
+        <div className="flex gap-2 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 no-scrollbar">
           {categories.map((cat) => (
             <button 
               key={cat}
@@ -840,8 +841,8 @@ const Index: React.FC = () => {
 
         {/* Main Content Area */}
         <main className="flex-1 p-4 md:p-8 lg:p-12 max-w-full overflow-hidden bg-background">
-          {/* Desktop Header */}
-          <header className="hidden md:flex justify-between items-center mb-10">
+          {/* Desktop Header - Hidden on tablet, visible on large screens only */}
+          <header className="hidden lg:flex justify-between items-center mb-10">
             <div>
                <span className="text-muted-foreground text-sm font-medium uppercase tracking-wider">Espace Membre</span>
                <h2 className="text-lg font-bold text-foreground">
