@@ -190,6 +190,60 @@ const Index: React.FC = () => {
           }));
           setTransactions(formattedTransactions);
         }
+
+        // Charger les gains par catégorie pour le graphique circulaire
+        const categoryColors: { [key: string]: string } = {
+          'Action': '#4f46e5',
+          'Arcade': '#9333ea',
+          'Aventure': '#10b981',
+          'Puzzle': '#f43f5e',
+          'RPG': '#f59e0b',
+          'Course': '#0ea5e9',
+          'Sci-Fi': '#06b6d4',
+        };
+
+        const gameCategories: { [key: string]: string } = {
+          'Triumph Game': 'Action',
+          'Desert Storm': 'Action',
+          'Neon Horizon': 'Arcade',
+          'Sky High': 'Arcade',
+          'Cyber City': 'Aventure',
+          'Ocean Deep': 'Aventure',
+          'Forest Mystery': 'Puzzle',
+          'Mystic Legends': 'RPG',
+          'Urban Drift': 'Course',
+          'Space Odyssey': 'Sci-Fi',
+        };
+
+        // Récupérer tous les gains pour calculer les catégories
+        const { data: allEarnings, error: allEarningsError } = await supabase
+          .from('game_earnings')
+          .select('game_title, amount')
+          .eq('user_id', authUser.id);
+
+        if (allEarningsError) {
+          console.error('Error fetching category earnings:', allEarningsError);
+        }
+
+        if (allEarnings && allEarnings.length > 0) {
+          const categoryTotals: { [key: string]: number } = {};
+          let totalAmount = 0;
+
+          allEarnings.forEach((earning) => {
+            const category = gameCategories[earning.game_title] || 'Autre';
+            categoryTotals[category] = (categoryTotals[category] || 0) + Number(earning.amount);
+            totalAmount += Number(earning.amount);
+          });
+
+          // Convertir en pourcentages et créer les données du graphique
+          const newCategoryData: CategoryEarning[] = Object.entries(categoryTotals).map(([name, value]) => ({
+            name,
+            value: Math.round((value / totalAmount) * 100),
+            color: categoryColors[name] || '#6b7280'
+          }));
+
+          setCategoryData(newCategoryData);
+        }
       } catch (error) {
         console.error('Error:', error);
       } finally {
