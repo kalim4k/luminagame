@@ -72,6 +72,33 @@ const Index: React.FC = () => {
   // User Profile State - chargé depuis Supabase
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
+
+  const refreshStatsFromDb = async () => {
+    if (!userId) return;
+
+    const { data: userStats, error: statsError } = await supabase
+      .from('user_stats')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (statsError) {
+      console.error('Error refreshing stats:', statsError);
+      return;
+    }
+
+    if (userStats) {
+      setStats({
+        balance: Number(userStats.balance) || 0,
+        earningsToday: Number(userStats.earnings_today) || 0,
+        earningsYesterday: Number(userStats.earnings_yesterday) || 0,
+        availableBalance: Number(userStats.available_balance) || 0,
+        totalWithdrawn: Number(userStats.total_withdrawn) || 0,
+      });
+      setLastRefreshedAt(new Date());
+    }
+  };
 
   // Charger les données utilisateur et stats depuis Supabase
   useEffect(() => {
@@ -253,6 +280,25 @@ const Index: React.FC = () => {
 
     fetchUserData();
   }, [navigate]);
+
+  // Rafraîchir les stats depuis la base (utile quand des valeurs changent côté backend)
+  useEffect(() => {
+    if (!userId) return;
+
+    refreshStatsFromDb();
+
+    const intervalId = window.setInterval(() => {
+      refreshStatsFromDb();
+    }, 15000);
+
+    const onFocus = () => refreshStatsFromDb();
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [userId]);
 
   const greeting = getGreeting();
 
@@ -599,9 +645,13 @@ const Index: React.FC = () => {
           </h1>
           <p className="text-muted-foreground mt-1">Voici les performances de Lumina Rewards cette semaine.</p>
         </div>
-        <div className="hidden md:flex items-center text-sm text-muted-foreground bg-card px-4 py-2 rounded-full border border-border shadow-sm">
-           Mise à jour : À l'instant
-        </div>
+        <button
+          type="button"
+          onClick={refreshStatsFromDb}
+          className="hidden md:flex items-center text-sm text-muted-foreground bg-card px-4 py-2 rounded-full border border-border shadow-sm hover:bg-secondary transition-colors"
+        >
+          Mise à jour : {lastRefreshedAt ? 'À l\'instant' : '—'}
+        </button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
