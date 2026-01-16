@@ -74,6 +74,22 @@ const Index: React.FC = () => {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  
+  // Withdrawal State
+  const [withdrawalState, setWithdrawalState] = useState<'idle' | 'loading' | 'success'>('idle');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+
+  const handleWithdrawal = () => {
+    setWithdrawalState('loading');
+    setTimeout(() => {
+      setWithdrawalState('success');
+    }, 7000);
+  };
+
+  const closeWithdrawalPopup = () => {
+    setWithdrawalState('idle');
+    setSelectedPaymentMethod(null);
+  };
 
   // Derived Data
   const categories = useMemo(() => {
@@ -329,8 +345,13 @@ const Index: React.FC = () => {
                 <div className="grid grid-cols-3 gap-2">
                   {Object.entries(PAYMENT_PROVIDERS).map(([name, logo]) => (
                     <button 
-                      key={name} 
-                      className="flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl border border-border text-muted-foreground text-xs font-medium hover:bg-accent hover:border-primary/30 hover:text-accent-foreground transition-all"
+                      key={name}
+                      onClick={() => setSelectedPaymentMethod(name)}
+                      className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl border text-xs font-medium transition-all ${
+                        selectedPaymentMethod === name 
+                          ? 'border-primary bg-accent text-accent-foreground ring-2 ring-primary/20' 
+                          : 'border-border text-muted-foreground hover:bg-accent hover:border-primary/30 hover:text-accent-foreground'
+                      }`}
                     >
                       <div className="w-8 h-8 rounded-lg overflow-hidden bg-secondary">
                         <img src={logo} alt={name} className="w-full h-full object-cover" />
@@ -354,7 +375,10 @@ const Index: React.FC = () => {
                 </div>
               </div>
 
-              <button className="w-full py-3.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-lg transition-all mt-2">
+              <button 
+                onClick={handleWithdrawal}
+                className="w-full py-3.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-lg transition-all mt-2"
+              >
                 Confirmer le retrait
               </button>
             </div>
@@ -940,6 +964,38 @@ const Index: React.FC = () => {
           onClose={handleCloseGame} 
           onComplete={handleGameComplete} 
         />
+      )}
+
+      {/* Withdrawal Modal */}
+      {withdrawalState !== 'idle' && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-card rounded-3xl p-8 w-full max-w-sm shadow-2xl border border-border animate-scale-in">
+            {withdrawalState === 'loading' ? (
+              <div className="flex flex-col items-center py-8">
+                <div className="relative w-20 h-20 mb-6">
+                  <div className="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+                  <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">Traitement en cours</h3>
+                <p className="text-muted-foreground text-center text-sm">Veuillez patienter pendant que nous traitons votre demande de retrait...</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center py-8">
+                <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mb-6">
+                  <CheckCircle size={48} className="text-success" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">Retrait réussi !</h3>
+                <p className="text-muted-foreground text-center text-sm mb-6">Votre demande de retrait a été traitée avec succès. Vous recevrez les fonds sous peu.</p>
+                <button 
+                  onClick={closeWithdrawalPopup}
+                  className="w-full py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all"
+                >
+                  Fermer
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
