@@ -15,11 +15,13 @@ export interface UserStats {
 }
 
 export interface UserProfile {
+  id?: string;
   name: string;
   email: string;
   phone: string;
-  avatar: string;
-  joinDate: string;
+  avatarUrl?: string;
+  avatar?: string;
+  joinDate?: string;
 }
 
 export interface Game {
