@@ -3,11 +3,7 @@ import { Lock, Settings } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 
 interface GameBlockedModalProps {
   isOpen: boolean;
@@ -22,24 +18,43 @@ export const GameBlockedModal: React.FC<GameBlockedModalProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-            <Lock className="h-8 w-8 text-destructive" />
+      <DialogContent className="sm:max-w-[320px] p-0 gap-0 rounded-[20px] border-0 shadow-2xl overflow-hidden bg-background/95 backdrop-blur-xl">
+        {/* Icon Header */}
+        <div className="flex flex-col items-center pt-8 pb-4 px-6">
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center mb-4 shadow-lg">
+            <Lock className="h-7 w-7 text-white" strokeWidth={2.5} />
           </div>
-          <DialogTitle className="text-xl">Accès refusé</DialogTitle>
-          <DialogDescription className="text-center mt-2">
-            Vous n'êtes pas autorisé à jouer à ce jeu. Veuillez mettre à jour votre configuration pour débloquer l'accès.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col gap-3 mt-4">
-          <Button onClick={onGoToConfig} className="w-full gap-2">
+          
+          <h3 className="text-[17px] font-semibold text-foreground text-center leading-tight">
+            Accès non autorisé
+          </h3>
+          
+          <p className="text-[13px] text-muted-foreground text-center mt-2 leading-relaxed px-2">
+            Veuillez configurer votre clé API et votre adresse IP pour accéder aux jeux.
+          </p>
+        </div>
+
+        {/* Separator */}
+        <div className="h-px bg-border/50" />
+
+        {/* Actions - iOS Style Stacked Buttons */}
+        <div className="flex flex-col">
+          <button
+            onClick={onGoToConfig}
+            className="w-full py-3.5 text-[17px] font-medium text-primary hover:bg-accent/50 active:bg-accent transition-colors flex items-center justify-center gap-2"
+          >
             <Settings size={18} />
-            Aller à la configuration
-          </Button>
-          <Button variant="outline" onClick={onClose} className="w-full">
-            Fermer
-          </Button>
+            Configuration
+          </button>
+          
+          <div className="h-px bg-border/50" />
+          
+          <button
+            onClick={onClose}
+            className="w-full py-3.5 text-[17px] text-muted-foreground hover:bg-accent/50 active:bg-accent transition-colors"
+          >
+            Annuler
+          </button>
         </div>
       </DialogContent>
     </Dialog>
