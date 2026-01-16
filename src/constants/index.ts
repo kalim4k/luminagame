@@ -131,11 +131,20 @@ export const MOCK_USER: UserProfile = {
   joinDate: '12 Jan 2024'
 };
 
+export const PAYMENT_PROVIDERS = {
+  'MTN Money': 'https://celinaroom.com/wp-content/uploads/2026/01/mtn-1-Copie-2.jpg',
+  'Paypal': 'https://celinaroom.com/wp-content/uploads/2026/01/paypal1.png',
+  'Orange Money': 'https://celinaroom.com/wp-content/uploads/2026/01/Orange-Money-recrute-pour-ce-poste-22-Mars-2023-Copie.png',
+  'Moov Money': 'https://celinaroom.com/wp-content/uploads/2026/01/Moov_Money_Flooz-Copie.png',
+  'Mix By Yass': 'https://celinaroom.com/wp-content/uploads/2026/01/mix-by-yass.jpg',
+  'Wave': 'https://celinaroom.com/wp-content/uploads/2026/01/wave-Copie.png',
+};
+
 export const TRANSACTIONS: Transaction[] = [
   { id: '1', type: 'withdrawal', amount: 50000, date: '25 Fév 2024', status: 'completed', provider: 'Orange Money' },
-  { id: '2', type: 'game_reward', amount: 850, date: '24 Fév 2024', status: 'completed' },
-  { id: '3', type: 'game_reward', amount: 1200, date: '24 Fév 2024', status: 'completed' },
-  { id: '4', type: 'withdrawal', amount: 25000, date: '20 Fév 2024', status: 'completed', provider: 'Wave' },
-  { id: '5', type: 'game_reward', amount: 300, date: '19 Fév 2024', status: 'completed' },
-  { id: '6', type: 'withdrawal', amount: 10000, date: '15 Fév 2024', status: 'failed', provider: 'MTN Money' },
+  { id: '2', type: 'withdrawal', amount: 25000, date: '20 Fév 2024', status: 'completed', provider: 'Wave' },
+  { id: '3', type: 'withdrawal', amount: 15000, date: '18 Fév 2024', status: 'completed', provider: 'MTN Money' },
+  { id: '4', type: 'withdrawal', amount: 30000, date: '15 Fév 2024', status: 'completed', provider: 'Moov Money' },
+  { id: '5', type: 'withdrawal', amount: 20000, date: '12 Fév 2024', status: 'pending', provider: 'Paypal' },
+  { id: '6', type: 'withdrawal', amount: 10000, date: '10 Fév 2024', status: 'failed', provider: 'Mix By Yass' },
 ];

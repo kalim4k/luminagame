@@ -38,7 +38,7 @@ import { RevenueChart } from '@/components/dashboard/RevenueChart';
 import { SourcesChart } from '@/components/dashboard/SourcesChart';
 import { GameCard } from '@/components/games/GameCard';
 import { GameSession } from '@/components/games/GameSession';
-import { GAMES, WEEKLY_DATA, CATEGORY_EARNINGS_DATA, MOCK_USER, TRANSACTIONS } from '@/constants';
+import { GAMES, WEEKLY_DATA, CATEGORY_EARNINGS_DATA, MOCK_USER, TRANSACTIONS, PAYMENT_PROVIDERS } from '@/constants';
 import { Game, Tab, UserStats, UserProfile } from '@/types';
 
 const Index: React.FC = () => {
@@ -357,34 +357,36 @@ const Index: React.FC = () => {
 
         <div className="lg:col-span-2 bg-card rounded-2xl border border-border shadow-sm flex flex-col overflow-hidden">
           <div className="p-6 border-b border-border flex justify-between items-center">
-            <h3 className="text-lg font-bold text-foreground">Historique des transactions</h3>
+            <h3 className="text-lg font-bold text-foreground">Historique des retraits</h3>
             <button className="text-sm text-primary font-medium hover:text-primary/80">Tout voir</button>
           </div>
           
           <div className="overflow-y-auto max-h-[600px]">
-            {TRANSACTIONS.map((tx) => (
+            {TRANSACTIONS.filter(tx => tx.type === 'withdrawal').map((tx) => (
               <div key={tx.id} className="p-4 sm:p-6 border-b border-border/50 last:border-0 hover:bg-secondary/50 transition-colors flex items-center justify-between group">
                 <div className="flex items-center space-x-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    tx.type === 'withdrawal' 
-                      ? 'bg-warning/10 text-warning' 
-                      : 'bg-success/10 text-success'
-                  }`}>
-                    {tx.type === 'withdrawal' ? <Wallet size={24} /> : <Gamepad2 size={24} />}
+                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-secondary flex items-center justify-center">
+                    {tx.provider && PAYMENT_PROVIDERS[tx.provider as keyof typeof PAYMENT_PROVIDERS] ? (
+                      <img 
+                        src={PAYMENT_PROVIDERS[tx.provider as keyof typeof PAYMENT_PROVIDERS]} 
+                        alt={tx.provider}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Wallet size={24} className="text-warning" />
+                    )}
                   </div>
                   <div>
                     <p className="font-bold text-foreground">
-                      {tx.type === 'withdrawal' ? `Retrait ${tx.provider}` : 'Gain de jeu'}
+                      Retrait {tx.provider}
                     </p>
                     <p className="text-sm text-muted-foreground">{tx.date}</p>
                   </div>
                 </div>
                 
                 <div className="text-right">
-                  <p className={`font-bold text-lg ${
-                    tx.type === 'withdrawal' ? 'text-foreground' : 'text-success'
-                  }`}>
-                    {tx.type === 'withdrawal' ? '-' : '+'}{tx.amount.toLocaleString()} FCFA
+                  <p className="font-bold text-lg text-foreground">
+                    -{tx.amount.toLocaleString()} FCFA
                   </p>
                   <div className="flex items-center justify-end text-xs font-medium mt-1">
                     {tx.status === 'completed' && (
