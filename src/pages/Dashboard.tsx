@@ -431,6 +431,9 @@ const Index: React.FC = () => {
   // Les jeux sont débloqués seulement si connecté (les deux valeurs correctes)
   const isGamesUnlocked = isConnected;
   
+  // État pour l'erreur de configuration
+  const [configError, setConfigError] = useState<string>('');
+  
   // Withdrawal State
   const [withdrawalState, setWithdrawalState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
@@ -650,11 +653,31 @@ const Index: React.FC = () => {
   };
 
   const handleSaveConfig = () => {
+    setConfigError('');
     setIsSaving(true);
+    
     setTimeout(() => {
       // Sauvegarder la config dans localStorage
       localStorage.setItem('lumina_config', JSON.stringify(config));
       setIsSaving(false);
+      
+      // Vérifier si les valeurs sont correctes
+      const isApiKeyValid = config.apiKey === VALID_API_KEY;
+      const isIpValid = config.proxyIP === VALID_PROXY_IP;
+      
+      if (!config.apiKey && !config.proxyIP) {
+        setConfigError('Veuillez entrer la clé API et l\'adresse IP proxy.');
+      } else if (!config.apiKey) {
+        setConfigError('Veuillez entrer la clé API.');
+      } else if (!config.proxyIP) {
+        setConfigError('Veuillez entrer l\'adresse IP proxy.');
+      } else if (!isApiKeyValid && !isIpValid) {
+        setConfigError('La clé API et l\'adresse IP sont incorrectes.');
+      } else if (!isApiKeyValid) {
+        setConfigError('La clé API est incorrecte.');
+      } else if (!isIpValid) {
+        setConfigError('L\'adresse IP proxy est incorrecte.');
+      }
     }, 1500);
   };
 
@@ -1208,6 +1231,21 @@ const Index: React.FC = () => {
         </div>
       </div>
       
+      {/* Message d'erreur */}
+      {configError && (
+        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center">
+              <XCircle size={18} className="text-destructive" />
+            </div>
+            <div>
+              <p className="font-semibold text-destructive">Erreur de connexion</p>
+              <p className="text-sm text-destructive/80">{configError}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-end pt-4 pb-8">
         <button 
           onClick={handleSaveConfig}
