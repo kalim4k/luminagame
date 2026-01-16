@@ -61,7 +61,6 @@ const Index: React.FC = () => {
   
   // User Stats State - chargé depuis Supabase
   const [stats, setStats] = useState<UserStats>({
-    balance: 0,
     earningsToday: 0,
     earningsYesterday: 0,
     availableBalance: 0,
@@ -100,7 +99,6 @@ const Index: React.FC = () => {
 
     if (userStats) {
       setStats({
-        balance: Number(userStats.balance) || 0,
         earningsToday: Number(userStats.earnings_today) || 0,
         earningsYesterday: Number(userStats.earnings_yesterday) || 0,
         availableBalance: Number(userStats.available_balance) || 0,
@@ -157,7 +155,6 @@ const Index: React.FC = () => {
 
         if (userStats) {
           setStats({
-            balance: Number(userStats.balance) || 0,
             earningsToday: Number(userStats.earnings_today) || 0,
             earningsYesterday: Number(userStats.earnings_yesterday) || 0,
             availableBalance: Number(userStats.available_balance) || 0,
@@ -463,12 +460,10 @@ const Index: React.FC = () => {
   };
 
   const handleGameComplete = async (reward: number) => {
-    // Mise à jour locale immédiate
+    // Mise à jour locale immédiate (seul earningsToday augmente)
     setStats(prev => ({
       ...prev,
-      balance: prev.balance + reward,
       earningsToday: prev.earningsToday + reward,
-      availableBalance: prev.availableBalance + reward
     }));
     setActiveGame(null);
 
@@ -484,18 +479,16 @@ const Index: React.FC = () => {
           duration_played: activeGame.durationSec,
         });
 
-        // Mettre à jour les stats utilisateur
+        // Mettre à jour les stats utilisateur (seul earnings_today augmente)
         const { data: currentStats } = await supabase
           .from('user_stats')
-          .select('balance, earnings_today, available_balance, total_games_played')
+          .select('earnings_today, total_games_played')
           .eq('user_id', userId)
           .single();
 
         if (currentStats) {
           await supabase.from('user_stats').update({
-            balance: Number(currentStats.balance) + reward,
             earnings_today: Number(currentStats.earnings_today) + reward,
-            available_balance: Number(currentStats.available_balance) + reward,
             total_games_played: Number(currentStats.total_games_played) + 1,
           }).eq('user_id', userId);
         }
@@ -514,12 +507,10 @@ const Index: React.FC = () => {
   const triumphStartTimeRef = React.useRef<number>(Date.now());
 
   const handleTriumphBalanceUpdate = (amount: number) => {
-    // Mise à jour locale immédiate
+    // Mise à jour locale immédiate (seul earningsToday augmente)
     setStats(prev => ({
       ...prev,
-      balance: prev.balance + amount,
       earningsToday: prev.earningsToday + amount,
-      availableBalance: prev.availableBalance + amount
     }));
     // Accumuler les gains pour la sauvegarde finale
     triumphEarningsRef.current += amount;
@@ -664,21 +655,16 @@ const Index: React.FC = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         <StatCard 
-          label="Solde Total" 
-          value={`${stats.balance.toLocaleString()} FCFA`}
+          label="Solde" 
+          value={`${(stats.availableBalance + stats.earningsToday).toLocaleString()} FCFA`}
           icon={DollarSign}
         />
         <StatCard 
           label="Gains Aujourd'hui" 
           value={`${stats.earningsToday.toLocaleString()} FCFA`}
           icon={TrendingUp}
-        />
-        <StatCard 
-          label="Solde Disponible" 
-          value={`${stats.availableBalance.toLocaleString()} FCFA`}
-          icon={Wallet}
         />
         <StatCard 
           label="Total Retiré" 
@@ -1414,7 +1400,7 @@ const Index: React.FC = () => {
       {activeGame && activeGame.title === 'Triumph Game' ? (
         <TriumphGame
           onBack={handleTriumphClose}
-          balance={stats.balance}
+          balance={stats.availableBalance + stats.earningsToday}
           updateBalance={handleTriumphBalanceUpdate}
           initialTime={activeGame.durationSec}
           onTimeUpdate={() => {}}

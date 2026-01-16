@@ -7,7 +7,6 @@ export enum Tab {
 }
 
 export interface UserStats {
-  balance: number;
   earningsToday: number;
   earningsYesterday: number;
   availableBalance: number;

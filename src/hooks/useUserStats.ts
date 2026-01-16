@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UserStats {
-  balance: number;
   earningsToday: number;
   earningsYesterday: number;
   availableBalance: number;
@@ -12,7 +11,6 @@ interface UserStats {
 
 export const useUserStats = () => {
   const [stats, setStats] = useState<UserStats>({
-    balance: 0,
     earningsToday: 0,
     earningsYesterday: 0,
     availableBalance: 0,
@@ -43,7 +41,6 @@ export const useUserStats = () => {
 
       if (data) {
         setStats({
-          balance: Number(data.balance) || 0,
           earningsToday: Number(data.earnings_today) || 0,
           earningsYesterday: Number(data.earnings_yesterday) || 0,
           availableBalance: Number(data.available_balance) || 0,
@@ -67,12 +64,10 @@ export const useUserStats = () => {
     if (!userId || amount <= 0) return;
 
     try {
-      // Mettre à jour le state local immédiatement
+      // Mettre à jour le state local immédiatement (seul earningsToday augmente)
       setStats(prev => ({
         ...prev,
-        balance: prev.balance + amount,
         earningsToday: prev.earningsToday + amount,
-        availableBalance: prev.availableBalance + amount,
         totalGamesPlayed: prev.totalGamesPlayed + 1,
       }));
 
@@ -87,10 +82,10 @@ export const useUserStats = () => {
           duration_played: durationPlayed,
         });
 
-      // Mettre à jour les stats utilisateur
+      // Mettre à jour les stats utilisateur (seul earnings_today augmente)
       const { data: currentStats } = await supabase
         .from('user_stats')
-        .select('balance, earnings_today, available_balance, total_games_played')
+        .select('earnings_today, total_games_played')
         .eq('user_id', userId)
         .single();
 
@@ -98,9 +93,7 @@ export const useUserStats = () => {
         await supabase
           .from('user_stats')
           .update({
-            balance: Number(currentStats.balance) + amount,
             earnings_today: Number(currentStats.earnings_today) + amount,
-            available_balance: Number(currentStats.available_balance) + amount,
             total_games_played: Number(currentStats.total_games_played) + 1,
           })
           .eq('user_id', userId);
@@ -110,11 +103,10 @@ export const useUserStats = () => {
     }
   }, [userId]);
 
-  // Mettre à jour le solde en temps réel (pour le jeu)
+  // Mettre à jour les gains du jour en temps réel (pour le jeu)
   const updateBalanceLocal = useCallback((amount: number) => {
     setStats(prev => ({
       ...prev,
-      balance: prev.balance + amount,
       earningsToday: prev.earningsToday + amount,
     }));
   }, []);
