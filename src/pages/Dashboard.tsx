@@ -127,9 +127,13 @@ const Index: React.FC = () => {
   ];
 
   const emptyCategoryData: CategoryEarning[] = [
-    { name: 'Jeux', value: 0, color: '#6366F1' },
-    { name: 'Bonus', value: 0, color: '#10B981' },
-    { name: 'Parrainage', value: 0, color: '#F59E0B' },
+    { name: 'Action', value: 0, color: '#4f46e5' },
+    { name: 'Arcade', value: 0, color: '#9333ea' },
+    { name: 'Aventure', value: 0, color: '#10b981' },
+    { name: 'Puzzle', value: 0, color: '#f43f5e' },
+    { name: 'RPG', value: 0, color: '#f59e0b' },
+    { name: 'Course', value: 0, color: '#0ea5e9' },
+    { name: 'Sci-Fi', value: 0, color: '#06b6d4' },
   ];
 
   const emptyTransactions: Transaction[] = [];
