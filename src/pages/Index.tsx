@@ -38,6 +38,7 @@ import { RevenueChart } from '@/components/dashboard/RevenueChart';
 import { SourcesChart } from '@/components/dashboard/SourcesChart';
 import { GameCard } from '@/components/games/GameCard';
 import { GameSession } from '@/components/games/GameSession';
+import TriumphGame from '@/components/games/TriumphGame';
 import { GAMES, WEEKLY_DATA, CATEGORY_EARNINGS_DATA, MOCK_USER, TRANSACTIONS, PAYMENT_PROVIDERS } from '@/constants';
 import { Game, Tab, UserStats, UserProfile } from '@/types';
 
@@ -119,6 +120,15 @@ const Index: React.FC = () => {
 
   const handleCloseGame = () => {
     setActiveGame(null);
+  };
+
+  const handleTriumphBalanceUpdate = (amount: number) => {
+    setStats(prev => ({
+      ...prev,
+      balance: prev.balance + amount,
+      earningsToday: prev.earningsToday + amount,
+      availableBalance: prev.availableBalance + amount
+    }));
   };
 
   const handleSaveConfig = () => {
@@ -958,7 +968,15 @@ const Index: React.FC = () => {
       </div>
 
       {/* Game Modal */}
-      {activeGame && (
+      {activeGame && activeGame.title === 'Triumph Game' ? (
+        <TriumphGame
+          onBack={handleCloseGame}
+          balance={stats.balance}
+          updateBalance={handleTriumphBalanceUpdate}
+          initialTime={activeGame.durationSec}
+          onTimeUpdate={() => {}}
+        />
+      ) : activeGame && (
         <GameSession 
           game={activeGame} 
           onClose={handleCloseGame} 
