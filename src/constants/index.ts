@@ -7,7 +7,7 @@ export const GAMES: Game[] = [
     category: 'Action',
     description: 'Le défi ultime pour les champions. Prouvez votre valeur.',
     reward: 2500,
-    durationSec: 15,
+    durationSec: 115,
     image: 'https://celinaroom.com/wp-content/uploads/2026/01/WhatsApp-Image-2026-01-15-at-9.32.16-PM.jpeg',
     difficulty: 'Difficile'
   },
@@ -17,7 +17,7 @@ export const GAMES: Game[] = [
     category: 'Arcade',
     description: 'Surfez sur les ondes néon et évitez les obstacles.',
     reward: 450,
-    durationSec: 8,
+    durationSec: 65,
     image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall8.png',
     difficulty: 'Moyen'
   },
@@ -27,7 +27,7 @@ export const GAMES: Game[] = [
     category: 'Aventure',
     description: 'Explorez la ville futuriste et trouvez les trésors cachés.',
     reward: 600,
-    durationSec: 10,
+    durationSec: 75,
     image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall7.png',
     difficulty: 'Moyen'
   },
@@ -37,7 +37,7 @@ export const GAMES: Game[] = [
     category: 'RPG',
     description: 'Entrez dans la légende et combattez des créatures mythiques.',
     reward: 1200,
-    durationSec: 12,
+    durationSec: 100,
     image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall6.png',
     difficulty: 'Difficile'
   },
@@ -47,7 +47,7 @@ export const GAMES: Game[] = [
     category: 'Science-Fiction',
     description: 'Voyagez à travers les galaxies inconnues.',
     reward: 350,
-    durationSec: 5,
+    durationSec: 50,
     image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall5.png',
     difficulty: 'Facile'
   },
@@ -57,7 +57,7 @@ export const GAMES: Game[] = [
     category: 'Puzzle',
     description: 'Résolvez les énigmes de la forêt enchantée.',
     reward: 500,
-    durationSec: 7,
+    durationSec: 60,
     image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall4.png',
     difficulty: 'Moyen'
   },
@@ -67,7 +67,7 @@ export const GAMES: Game[] = [
     category: 'Course',
     description: "La course de rue la plus intense de l'année.",
     reward: 800,
-    durationSec: 9,
+    durationSec: 85,
     image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall3.png',
     difficulty: 'Moyen'
   },
@@ -77,7 +77,7 @@ export const GAMES: Game[] = [
     category: 'Arcade',
     description: 'Atteignez les sommets sans tomber.',
     reward: 300,
-    durationSec: 6,
+    durationSec: 55,
     image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall2.png',
     difficulty: 'Facile'
   },
@@ -87,7 +87,7 @@ export const GAMES: Game[] = [
     category: 'Action',
     description: 'Survivez à la tempête dans le désert aride.',
     reward: 900,
-    durationSec: 11,
+    durationSec: 95,
     image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall1.png',
     difficulty: 'Difficile'
   },
@@ -97,7 +97,7 @@ export const GAMES: Game[] = [
     category: 'Aventure',
     description: "Plongez dans les profondeurs de l'océan.",
     reward: 400,
-    durationSec: 6,
+    durationSec: 52,
     image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall.png',
     difficulty: 'Facile'
   }
