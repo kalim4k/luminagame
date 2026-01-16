@@ -1,47 +1,141 @@
-import { Game, Transaction, WeeklyData, CategoryEarning, UserProfile } from '@/types';
-
-export const MOCK_USER: UserProfile = {
-  name: 'Kouamé',
-  email: 'kouame@example.com',
-  phone: '07 88 92 45 00',
-  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-  joinDate: '15 Mars 2024'
-};
+import { Game, WeeklyDataPoint, UserProfile, Transaction, CategoryEarning } from '@/types';
 
 export const GAMES: Game[] = [
-  { id: '1', name: 'Quiz Culture', category: 'Quiz', reward: 500, image: '🧠', difficulty: 'easy', duration: '3 min' },
-  { id: '2', name: 'Memory Master', category: 'Mémoire', reward: 750, image: '🎯', difficulty: 'medium', duration: '5 min' },
-  { id: '3', name: 'Speed Math', category: 'Mathématiques', reward: 1000, image: '🔢', difficulty: 'hard', duration: '4 min' },
-  { id: '4', name: 'Word Puzzle', category: 'Mots', reward: 600, image: '📝', difficulty: 'easy', duration: '3 min' },
-  { id: '5', name: 'Color Match', category: 'Réflexes', reward: 450, image: '🎨', difficulty: 'easy', duration: '2 min' },
-  { id: '6', name: 'Logic Quest', category: 'Logique', reward: 850, image: '🧩', difficulty: 'medium', duration: '6 min' },
-  { id: '7', name: 'Geo Master', category: 'Quiz', reward: 700, image: '🌍', difficulty: 'medium', duration: '4 min' },
-  { id: '8', name: 'Pattern Pro', category: 'Logique', reward: 900, image: '🔷', difficulty: 'hard', duration: '5 min' },
+  {
+    id: '1',
+    title: 'Triumph Game',
+    category: 'Action',
+    description: 'Le défi ultime pour les champions. Prouvez votre valeur.',
+    reward: 2500,
+    durationSec: 15,
+    image: 'https://celinaroom.com/wp-content/uploads/2026/01/WhatsApp-Image-2026-01-15-at-9.32.16-PM.jpeg',
+    difficulty: 'Difficile'
+  },
+  {
+    id: '2',
+    title: 'Neon Horizon',
+    category: 'Arcade',
+    description: 'Surfez sur les ondes néon et évitez les obstacles.',
+    reward: 450,
+    durationSec: 8,
+    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall8.png',
+    difficulty: 'Moyen'
+  },
+  {
+    id: '3',
+    title: 'Cyber City',
+    category: 'Aventure',
+    description: 'Explorez la ville futuriste et trouvez les trésors cachés.',
+    reward: 600,
+    durationSec: 10,
+    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall7.png',
+    difficulty: 'Moyen'
+  },
+  {
+    id: '4',
+    title: 'Mystic Legends',
+    category: 'RPG',
+    description: 'Entrez dans la légende et combattez des créatures mythiques.',
+    reward: 1200,
+    durationSec: 12,
+    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall6.png',
+    difficulty: 'Difficile'
+  },
+  {
+    id: '5',
+    title: 'Space Odyssey',
+    category: 'Science-Fiction',
+    description: 'Voyagez à travers les galaxies inconnues.',
+    reward: 350,
+    durationSec: 5,
+    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall5.png',
+    difficulty: 'Facile'
+  },
+  {
+    id: '6',
+    title: 'Forest Mystery',
+    category: 'Puzzle',
+    description: 'Résolvez les énigmes de la forêt enchantée.',
+    reward: 500,
+    durationSec: 7,
+    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall4.png',
+    difficulty: 'Moyen'
+  },
+  {
+    id: '7',
+    title: 'Urban Drift',
+    category: 'Course',
+    description: "La course de rue la plus intense de l'année.",
+    reward: 800,
+    durationSec: 9,
+    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall3.png',
+    difficulty: 'Moyen'
+  },
+  {
+    id: '8',
+    title: 'Sky High',
+    category: 'Arcade',
+    description: 'Atteignez les sommets sans tomber.',
+    reward: 300,
+    durationSec: 6,
+    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall2.png',
+    difficulty: 'Facile'
+  },
+  {
+    id: '9',
+    title: 'Desert Storm',
+    category: 'Action',
+    description: 'Survivez à la tempête dans le désert aride.',
+    reward: 900,
+    durationSec: 11,
+    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall1.png',
+    difficulty: 'Difficile'
+  },
+  {
+    id: '10',
+    title: 'Ocean Deep',
+    category: 'Aventure',
+    description: "Plongez dans les profondeurs de l'océan.",
+    reward: 400,
+    durationSec: 6,
+    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall.png',
+    difficulty: 'Facile'
+  }
 ];
 
-export const WEEKLY_DATA: WeeklyData[] = [
-  { day: 'Lun', revenue: 12000, traffic: 45 },
-  { day: 'Mar', revenue: 18500, traffic: 62 },
-  { day: 'Mer', revenue: 15000, traffic: 51 },
-  { day: 'Jeu', revenue: 22000, traffic: 78 },
-  { day: 'Ven', revenue: 28000, traffic: 92 },
-  { day: 'Sam', revenue: 35000, traffic: 120 },
-  { day: 'Dim', revenue: 30000, traffic: 105 },
+export const WEEKLY_DATA: WeeklyDataPoint[] = [
+  { day: 'Lun', amount: 8500 },
+  { day: 'Mar', amount: 12200 },
+  { day: 'Mer', amount: 9800 },
+  { day: 'Jeu', amount: 16500 },
+  { day: 'Ven', amount: 21000 },
+  { day: 'Sam', amount: 29500 },
+  { day: 'Dim', amount: 18900 },
 ];
 
 export const CATEGORY_EARNINGS_DATA: CategoryEarning[] = [
-  { name: 'Quiz', value: 35, color: '#6366f1' },
-  { name: 'Mémoire', value: 25, color: '#10b981' },
-  { name: 'Logique', value: 20, color: '#f59e0b' },
-  { name: 'Autres', value: 20, color: '#8b5cf6' },
+  { name: 'Action', value: 35, color: '#4f46e5' },
+  { name: 'Arcade', value: 20, color: '#9333ea' },
+  { name: 'Aventure', value: 15, color: '#10b981' },
+  { name: 'Puzzle', value: 10, color: '#f43f5e' },
+  { name: 'RPG', value: 10, color: '#f59e0b' },
+  { name: 'Course', value: 5, color: '#0ea5e9' },
+  { name: 'Sci-Fi', value: 5, color: '#06b6d4' },
 ];
 
+export const MOCK_USER: UserProfile = {
+  name: 'Kalim',
+  email: 'kalim@example.com',
+  phone: '+225 07 07 07 07 07',
+  avatar: 'https://ui-avatars.com/api/?name=Kalim&background=4f46e5&color=fff',
+  joinDate: '12 Jan 2024'
+};
+
 export const TRANSACTIONS: Transaction[] = [
-  { id: '1', type: 'withdrawal', amount: 15000, status: 'completed', date: 'Aujourd\'hui, 14:30', provider: 'Orange' },
-  { id: '2', type: 'earning', amount: 2500, status: 'completed', date: 'Aujourd\'hui, 12:15' },
-  { id: '3', type: 'withdrawal', amount: 10000, status: 'pending', date: 'Hier, 18:45', provider: 'MTN' },
-  { id: '4', type: 'earning', amount: 1800, status: 'completed', date: 'Hier, 16:20' },
-  { id: '5', type: 'earning', amount: 3200, status: 'completed', date: 'Hier, 11:00' },
-  { id: '6', type: 'withdrawal', amount: 20000, status: 'failed', date: '14 Jan, 09:30', provider: 'Wave' },
-  { id: '7', type: 'earning', amount: 950, status: 'completed', date: '13 Jan, 20:15' },
+  { id: '1', type: 'withdrawal', amount: 50000, date: '25 Fév 2024', status: 'completed', provider: 'Orange Money' },
+  { id: '2', type: 'game_reward', amount: 850, date: '24 Fév 2024', status: 'completed' },
+  { id: '3', type: 'game_reward', amount: 1200, date: '24 Fév 2024', status: 'completed' },
+  { id: '4', type: 'withdrawal', amount: 25000, date: '20 Fév 2024', status: 'completed', provider: 'Wave' },
+  { id: '5', type: 'game_reward', amount: 300, date: '19 Fév 2024', status: 'completed' },
+  { id: '6', type: 'withdrawal', amount: 10000, date: '15 Fév 2024', status: 'failed', provider: 'MTN Money' },
 ];
