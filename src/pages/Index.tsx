@@ -325,11 +325,17 @@ const Index: React.FC = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Moyen de paiement</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Moyen de paiement</label>
                 <div className="grid grid-cols-3 gap-2">
-                  {['Orange', 'MTN', 'Wave'].map(provider => (
-                    <button key={provider} className="py-2.5 px-2 rounded-xl border border-border text-muted-foreground text-sm font-medium hover:bg-accent hover:border-primary/30 hover:text-accent-foreground transition-all">
-                      {provider}
+                  {Object.entries(PAYMENT_PROVIDERS).map(([name, logo]) => (
+                    <button 
+                      key={name} 
+                      className="flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl border border-border text-muted-foreground text-xs font-medium hover:bg-accent hover:border-primary/30 hover:text-accent-foreground transition-all"
+                    >
+                      <div className="w-8 h-8 rounded-lg overflow-hidden bg-secondary">
+                        <img src={logo} alt={name} className="w-full h-full object-cover" />
+                      </div>
+                      <span className="text-center leading-tight">{name}</span>
                     </button>
                   ))}
                 </div>
