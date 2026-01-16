@@ -39,10 +39,15 @@ import { RevenueChart } from '@/components/dashboard/RevenueChart';
 import { SourcesChart } from '@/components/dashboard/SourcesChart';
 import { GameCard } from '@/components/games/GameCard';
 import { GameSession } from '@/components/games/GameSession';
+import { GameBlockedModal } from '@/components/games/GameBlockedModal';
 import TriumphGame, { getTriumphPendingEarnings, clearTriumphSession } from '@/components/games/TriumphGame';
 import { GAMES, PAYMENT_PROVIDERS } from '@/constants';
 import { Game, Tab, UserStats, UserProfile, WeeklyDataPoint, CategoryEarning, Transaction } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
+
+// Constantes de validation pour débloquer les jeux
+const VALID_API_KEY = 'sk-test-4f8a9c2d7e1b6a0c9f3e2d1a8b7c6d5e';
+const VALID_PROXY_IP = '199:152.7.96';
 
 // Fonction pour déterminer le message de salutation selon l'heure
 const getGreeting = () => {
@@ -400,6 +405,14 @@ const Index: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   
+  // État pour le modal de jeu bloqué
+  const [showBlockedModal, setShowBlockedModal] = useState(false);
+  
+  // Vérifier si les jeux sont débloqués (clé API et IP valides)
+  const isGamesUnlocked = useMemo(() => {
+    return config.apiKey === VALID_API_KEY && config.proxyIP === VALID_PROXY_IP;
+  }, [config.apiKey, config.proxyIP]);
+  
   // Withdrawal State
   const [withdrawalState, setWithdrawalState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
@@ -506,7 +519,16 @@ const Index: React.FC = () => {
 
   // Handlers
   const handlePlayGame = (game: Game) => {
+    if (!isGamesUnlocked) {
+      setShowBlockedModal(true);
+      return;
+    }
     setActiveGame(game);
+  };
+  
+  const handleGoToConfig = () => {
+    setShowBlockedModal(false);
+    setActiveTab(Tab.CONFIGURATION);
   };
 
   const handleGameComplete = async (reward: number) => {
@@ -1500,6 +1522,13 @@ const Index: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Game Blocked Modal */}
+      <GameBlockedModal
+        isOpen={showBlockedModal}
+        onClose={() => setShowBlockedModal(false)}
+        onGoToConfig={handleGoToConfig}
+      />
     </div>
   );
 };
