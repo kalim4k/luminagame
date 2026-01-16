@@ -141,10 +141,10 @@ export const PAYMENT_PROVIDERS = {
 };
 
 export const TRANSACTIONS: Transaction[] = [
-  { id: '1', type: 'withdrawal', amount: 50000, date: '25 Fév 2024', status: 'completed', provider: 'Orange Money' },
-  { id: '2', type: 'withdrawal', amount: 25000, date: '20 Fév 2024', status: 'completed', provider: 'Wave' },
-  { id: '3', type: 'withdrawal', amount: 15000, date: '18 Fév 2024', status: 'completed', provider: 'MTN Money' },
-  { id: '4', type: 'withdrawal', amount: 30000, date: '15 Fév 2024', status: 'completed', provider: 'Moov Money' },
-  { id: '5', type: 'withdrawal', amount: 20000, date: '12 Fév 2024', status: 'pending', provider: 'Paypal' },
-  { id: '6', type: 'withdrawal', amount: 10000, date: '10 Fév 2024', status: 'failed', provider: 'Mix By Yass' },
+  { id: '1', type: 'withdrawal', amount: 10000, date: '25 Fév 2024', status: 'completed', provider: 'Moov Money' },
+  { id: '2', type: 'withdrawal', amount: 3000, date: '20 Fév 2024', status: 'completed', provider: 'Mix By Yass' },
+  { id: '3', type: 'withdrawal', amount: 10000, date: '18 Fév 2024', status: 'completed', provider: 'Moov Money' },
+  { id: '4', type: 'withdrawal', amount: 3000, date: '15 Fév 2024', status: 'completed', provider: 'Mix By Yass' },
+  { id: '5', type: 'withdrawal', amount: 10000, date: '12 Fév 2024', status: 'pending', provider: 'Moov Money' },
+  { id: '6', type: 'withdrawal', amount: 3000, date: '10 Fév 2024', status: 'failed', provider: 'Mix By Yass' },
 ];
