@@ -24,27 +24,27 @@ export interface UserProfile {
 
 export interface Game {
   id: string;
-  name: string;
+  title: string;
   category: string;
+  description: string;
   reward: number;
+  durationSec: number;
   image: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  duration: string;
+  difficulty: string;
 }
 
 export interface Transaction {
   id: string;
-  type: 'withdrawal' | 'earning';
+  type: 'withdrawal' | 'game_reward';
   amount: number;
   status: 'completed' | 'pending' | 'failed';
   date: string;
   provider?: string;
 }
 
-export interface WeeklyData {
+export interface WeeklyDataPoint {
   day: string;
-  revenue: number;
-  traffic: number;
+  amount: number;
 }
 
 export interface CategoryEarning {
