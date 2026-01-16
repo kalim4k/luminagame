@@ -1,33 +1,30 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Zap, Shield, Wallet } from 'lucide-react';
+import { ArrowRight, Play, Shield, Smartphone, TrendingUp } from 'lucide-react';
 
 const Landing: React.FC = () => {
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden">
-      {/* Subtle gradient background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-black to-indigo-950/20 pointer-events-none" />
-      
+    <div className="min-h-screen bg-white text-gray-900">
       {/* Header */}
-      <header className="relative z-10 px-6 py-6">
+      <header className="px-6 py-5 border-b border-gray-100">
         <nav className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
-              <span className="text-black font-bold text-xl">L</span>
+          <div className="flex items-center space-x-2">
+            <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">L</span>
             </div>
-            <span className="font-bold text-xl tracking-tight">Lumina</span>
+            <span className="font-semibold text-xl text-gray-900">Lumina</span>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <Link 
               to="/auth" 
-              className="px-6 py-2.5 text-sm font-medium text-white/80 hover:text-white transition-colors"
+              className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
-              Connexion
+              Se connecter
             </Link>
             <Link 
               to="/auth?mode=signup" 
-              className="px-6 py-2.5 text-sm font-semibold bg-white text-black rounded-full hover:bg-white/90 transition-all"
+              className="px-5 py-2.5 text-sm font-medium bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
             >
               Commencer
             </Link>
@@ -36,109 +33,148 @@ const Landing: React.FC = () => {
       </header>
 
       {/* Hero Section */}
-      <main className="relative z-10 px-6 pt-20 pb-32">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
-            <Zap size={14} className="text-yellow-400 mr-2" />
-            <span className="text-sm text-white/70">Plateforme de récompenses #1 en Afrique</span>
+      <main className="px-6">
+        <div className="max-w-6xl mx-auto pt-20 pb-24">
+          <div className="max-w-3xl">
+            {/* Badge */}
+            <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-700 text-sm font-medium mb-8">
+              <span className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>
+              Nouveau : Retraits instantanés disponibles
+            </div>
+
+            {/* Headline */}
+            <h1 className="text-5xl sm:text-6xl font-bold tracking-tight leading-[1.1] text-gray-900 mb-6">
+              Gagnez de l'argent
+              <br />
+              <span className="text-indigo-600">en jouant.</span>
+            </h1>
+
+            {/* Subheadline */}
+            <p className="text-xl text-gray-500 max-w-xl leading-relaxed mb-10">
+              La plateforme qui récompense votre temps. Jouez à des mini-jeux et retirez vos gains directement sur Mobile Money.
+            </p>
+
+            {/* CTA */}
+            <div className="flex flex-col sm:flex-row items-start gap-4">
+              <Link 
+                to="/auth?mode=signup" 
+                className="group inline-flex items-center px-6 py-3.5 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                Créer un compte gratuit
+                <ArrowRight size={18} className="ml-2 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+              <Link 
+                to="/auth" 
+                className="inline-flex items-center px-6 py-3.5 text-gray-600 font-medium hover:text-gray-900 transition-colors"
+              >
+                <Play size={16} className="mr-2" />
+                Voir comment ça marche
+              </Link>
+            </div>
           </div>
 
-          {/* Main Headline */}
-          <h1 className="text-5xl sm:text-7xl font-black tracking-tight leading-[1.1] mb-6">
-            Jouez.
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-              Gagnez.
-            </span>
-            <br />
-            Retirez.
-          </h1>
+          {/* Stats Row */}
+          <div className="mt-20 pt-10 border-t border-gray-100 grid grid-cols-3 gap-8">
+            <div>
+              <div className="text-3xl font-bold text-gray-900">50K+</div>
+              <div className="text-sm text-gray-500 mt-1">Utilisateurs actifs</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-gray-900">2M FCFA</div>
+              <div className="text-sm text-gray-500 mt-1">Distribués ce mois</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-gray-900">{"<"}5min</div>
+              <div className="text-sm text-gray-500 mt-1">Délai de retrait</div>
+            </div>
+          </div>
+        </div>
 
-          {/* Subheadline */}
-          <p className="text-lg sm:text-xl text-white/50 max-w-2xl mx-auto mb-12 leading-relaxed">
-            Transformez votre temps libre en revenus. Jouez à des jeux captivants et 
-            retirez vos gains instantanément sur Mobile Money.
-          </p>
+        {/* Features Section */}
+        <div className="max-w-6xl mx-auto py-24 border-t border-gray-100">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Comment ça fonctionne</h2>
+            <p className="text-gray-500 max-w-lg mx-auto">
+              Trois étapes simples pour commencer à gagner de l'argent avec Lumina.
+            </p>
+          </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-8">
+              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Smartphone size={28} className="text-indigo-600" />
+              </div>
+              <div className="text-sm font-semibold text-indigo-600 mb-2">Étape 1</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Créez votre compte</h3>
+              <p className="text-gray-500 leading-relaxed">
+                Inscription gratuite en 30 secondes. Aucune carte bancaire requise.
+              </p>
+            </div>
+
+            <div className="text-center p-8">
+              <div className="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Play size={28} className="text-green-600" />
+              </div>
+              <div className="text-sm font-semibold text-green-600 mb-2">Étape 2</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Jouez aux jeux</h3>
+              <p className="text-gray-500 leading-relaxed">
+                Choisissez parmi notre catalogue de jeux et commencez à accumuler des gains.
+              </p>
+            </div>
+
+            <div className="text-center p-8">
+              <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <TrendingUp size={28} className="text-amber-600" />
+              </div>
+              <div className="text-sm font-semibold text-amber-600 mb-2">Étape 3</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Retirez vos gains</h3>
+              <p className="text-gray-500 leading-relaxed">
+                Transférez vers Orange Money, Wave, MTN ou Moov en quelques clics.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Trust Section */}
+        <div className="max-w-6xl mx-auto py-24 border-t border-gray-100">
+          <div className="bg-gray-50 rounded-3xl p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-4">
+                <Shield size={20} className="text-green-600" />
+                <span className="text-sm font-semibold text-green-600">Sécurisé & Fiable</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                Vos gains sont protégés
+              </h3>
+              <p className="text-gray-500 leading-relaxed">
+                Nous utilisons les technologies de sécurité les plus avancées pour protéger vos données et garantir des paiements fiables.
+              </p>
+            </div>
             <Link 
               to="/auth?mode=signup" 
-              className="group flex items-center px-8 py-4 bg-white text-black font-bold rounded-full hover:bg-white/90 transition-all shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+              className="px-8 py-4 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors whitespace-nowrap"
             >
-              Créer un compte gratuit
-              <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
+              Rejoindre Lumina
             </Link>
-            <Link 
-              to="/auth" 
-              className="px-8 py-4 text-white/70 font-medium hover:text-white transition-colors"
-            >
-              J'ai déjà un compte
-            </Link>
-          </div>
-        </div>
-
-        {/* Features Grid */}
-        <div className="max-w-5xl mx-auto mt-32 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-all">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center mb-6">
-              <Zap size={24} className="text-indigo-400" />
-            </div>
-            <h3 className="text-xl font-bold mb-3">Jeux instantanés</h3>
-            <p className="text-white/50 leading-relaxed">
-              Des jeux rapides et amusants conçus pour maximiser vos gains en quelques minutes.
-            </p>
-          </div>
-
-          <div className="p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-all">
-            <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center mb-6">
-              <Wallet size={24} className="text-green-400" />
-            </div>
-            <h3 className="text-xl font-bold mb-3">Retrait rapide</h3>
-            <p className="text-white/50 leading-relaxed">
-              Retirez vos gains sur Orange Money, MTN, Wave et plus encore en quelques clics.
-            </p>
-          </div>
-
-          <div className="p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-all">
-            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6">
-              <Shield size={24} className="text-purple-400" />
-            </div>
-            <h3 className="text-xl font-bold mb-3">100% Sécurisé</h3>
-            <p className="text-white/50 leading-relaxed">
-              Vos données et vos gains sont protégés par les meilleurs systèmes de sécurité.
-            </p>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="max-w-4xl mx-auto mt-24 grid grid-cols-3 gap-8 text-center">
-          <div>
-            <div className="text-4xl sm:text-5xl font-black text-white mb-2">50K+</div>
-            <div className="text-sm text-white/40 uppercase tracking-wider">Joueurs actifs</div>
-          </div>
-          <div>
-            <div className="text-4xl sm:text-5xl font-black text-white mb-2">2M+</div>
-            <div className="text-sm text-white/40 uppercase tracking-wider">FCFA distribués</div>
-          </div>
-          <div>
-            <div className="text-4xl sm:text-5xl font-black text-white mb-2">10+</div>
-            <div className="text-sm text-white/40 uppercase tracking-wider">Jeux disponibles</div>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 px-6 py-8 border-t border-white/[0.05]">
+      <footer className="px-6 py-8 border-t border-gray-100">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-sm text-white/30">
+          <div className="flex items-center space-x-2">
+            <div className="w-7 h-7 bg-indigo-600 rounded-md flex items-center justify-center">
+              <span className="text-white font-bold text-sm">L</span>
+            </div>
+            <span className="font-medium text-gray-900">Lumina</span>
+          </div>
+          <div className="text-sm text-gray-400">
             © 2024 Lumina. Tous droits réservés.
           </div>
-          <div className="flex items-center space-x-6 text-sm text-white/30">
-            <a href="#" className="hover:text-white/60 transition-colors">Conditions</a>
-            <a href="#" className="hover:text-white/60 transition-colors">Confidentialité</a>
-            <a href="#" className="hover:text-white/60 transition-colors">Contact</a>
+          <div className="flex items-center space-x-6 text-sm text-gray-500">
+            <a href="#" className="hover:text-gray-900 transition-colors">Conditions</a>
+            <a href="#" className="hover:text-gray-900 transition-colors">Confidentialité</a>
           </div>
         </div>
       </footer>
