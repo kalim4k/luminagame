@@ -447,6 +447,11 @@ const Index: React.FC = () => {
     setIsMobileMenuOpen(false);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
+  };
+
   // Render Helpers
   const renderNavButtons = () => (
     <>
@@ -1096,7 +1101,10 @@ const Index: React.FC = () => {
                     <ChevronRight size={18} className="text-muted-foreground" />
                  </button>
                  
-                 <button className="w-full flex items-center justify-between p-4 rounded-xl border border-border hover:bg-destructive/5 hover:border-destructive/20 transition-colors group mt-8">
+                 <button 
+                   onClick={handleLogout}
+                   className="w-full flex items-center justify-between p-4 rounded-xl border border-border hover:bg-destructive/5 hover:border-destructive/20 transition-colors group mt-8"
+                 >
                     <div className="flex items-center">
                       <div className="p-2 bg-destructive/10 text-destructive rounded-lg mr-3 group-hover:bg-destructive/20 transition-colors">
                         <LogOut size={20} />
