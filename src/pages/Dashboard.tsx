@@ -74,8 +74,18 @@ const Index: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
 
-  const refreshStatsFromDb = async () => {
+  const refreshStatsFromDb = async (recalculate = false) => {
     if (!userId) return;
+
+    // Optionnellement recalculer les stats depuis les données sources
+    if (recalculate) {
+      const { error: rpcError } = await supabase.rpc('recalculate_user_stats', {
+        target_user_id: userId
+      });
+      if (rpcError) {
+        console.error('Error recalculating stats:', rpcError);
+      }
+    }
 
     const { data: userStats, error: statsError } = await supabase
       .from('user_stats')
@@ -647,7 +657,7 @@ const Index: React.FC = () => {
         </div>
         <button
           type="button"
-          onClick={refreshStatsFromDb}
+          onClick={() => refreshStatsFromDb(true)}
           className="hidden md:flex items-center text-sm text-muted-foreground bg-card px-4 py-2 rounded-full border border-border shadow-sm hover:bg-secondary transition-colors"
         >
           Mise à jour : {lastRefreshedAt ? 'À l\'instant' : '—'}
