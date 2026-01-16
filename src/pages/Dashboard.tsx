@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Gamepad2, 
@@ -39,24 +40,80 @@ import { SourcesChart } from '@/components/dashboard/SourcesChart';
 import { GameCard } from '@/components/games/GameCard';
 import { GameSession } from '@/components/games/GameSession';
 import TriumphGame from '@/components/games/TriumphGame';
-import { GAMES, WEEKLY_DATA, CATEGORY_EARNINGS_DATA, MOCK_USER, TRANSACTIONS, PAYMENT_PROVIDERS } from '@/constants';
+import { GAMES, WEEKLY_DATA, CATEGORY_EARNINGS_DATA, TRANSACTIONS, PAYMENT_PROVIDERS } from '@/constants';
 import { Game, Tab, UserStats, UserProfile } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+
+// Fonction pour déterminer le message de salutation selon l'heure
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return { text: 'Bonjour', emoji: '☀️' };
+  if (hour >= 12 && hour < 18) return { text: 'Bon après-midi', emoji: '🌤️' };
+  return { text: 'Bonsoir', emoji: '🌙' };
+};
 
 const Index: React.FC = () => {
+  const navigate = useNavigate();
+  
   // Navigation State
   const [activeTab, setActiveTab] = useState<Tab>(Tab.DASHBOARD);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // User Stats State (Simulated backend data in FCFA)
+  // User Stats State - Initialisé à zéro pour les nouveaux comptes
   const [stats, setStats] = useState<UserStats>({
-    balance: 93500,
-    earningsToday: 5500,
-    earningsYesterday: 8200,
-    availableBalance: 85000,
-    totalWithdrawn: 295000
+    balance: 0,
+    earningsToday: 0,
+    earningsYesterday: 0,
+    availableBalance: 0,
+    totalWithdrawn: 0
   });
 
-  const [user] = useState<UserProfile>(MOCK_USER);
+  // User Profile State - chargé depuis Supabase
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Charger les données utilisateur depuis Supabase
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        
+        if (!authUser) {
+          navigate('/auth');
+          return;
+        }
+
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', authUser.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+          return;
+        }
+
+        if (profile) {
+          setUser({
+            id: profile.id,
+            name: profile.name,
+            email: profile.email,
+            phone: profile.phone || '',
+            avatarUrl: profile.avatar_url || ''
+          });
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [navigate]);
+
+  const greeting = getGreeting();
 
   // Gameplay State
   const [activeGame, setActiveGame] = useState<Game | null>(null);
@@ -210,7 +267,7 @@ const Index: React.FC = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center">
-            Bonsoir {user.name} ! <span className="ml-2 text-2xl">🌙</span>
+            {greeting.text} {user?.name?.split(' ')[0] || 'Utilisateur'} ! <span className="ml-2 text-2xl">{greeting.emoji}</span>
           </h1>
           <p className="text-muted-foreground mt-1">Voici les performances de Lumina Rewards cette semaine.</p>
         </div>
@@ -379,7 +436,7 @@ const Index: React.FC = () => {
                   <input 
                     type="tel" 
                     placeholder="07 00 00 00 00" 
-                    defaultValue={user.phone}
+                    defaultValue={user?.phone || ''}
                     className="w-full pl-10 pr-4 py-3 bg-secondary border border-border rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all"
                   />
                 </div>
