@@ -127,6 +127,69 @@ const Index: React.FC = () => {
             totalWithdrawn: Number(userStats.total_withdrawn) || 0,
           });
         }
+
+        // Charger les gains hebdomadaires depuis game_earnings
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        const { data: earnings, error: earningsError } = await supabase
+          .from('game_earnings')
+          .select('amount, created_at')
+          .eq('user_id', authUser.id)
+          .gte('created_at', sevenDaysAgo.toISOString())
+          .order('created_at', { ascending: true });
+
+        if (earningsError) {
+          console.error('Error fetching earnings:', earningsError);
+        }
+
+        if (earnings && earnings.length > 0) {
+          // Grouper les gains par jour de la semaine
+          const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+          const dailyTotals: { [key: string]: number } = {};
+          
+          earnings.forEach((earning) => {
+            const date = new Date(earning.created_at);
+            const dayName = dayNames[date.getDay()];
+            dailyTotals[dayName] = (dailyTotals[dayName] || 0) + Number(earning.amount);
+          });
+
+          // Créer les données pour le graphique dans l'ordre correct
+          const orderedDays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+          const newWeeklyData = orderedDays.map(day => ({
+            day,
+            amount: dailyTotals[day] || 0
+          }));
+          
+          setWeeklyData(newWeeklyData);
+        }
+
+        // Charger les transactions (retraits)
+        const { data: txData, error: txError } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('user_id', authUser.id)
+          .order('created_at', { ascending: false });
+
+        if (txError) {
+          console.error('Error fetching transactions:', txError);
+        }
+
+        if (txData && txData.length > 0) {
+          const formattedTransactions: Transaction[] = txData.map((tx) => ({
+            id: tx.id,
+            type: tx.type as 'withdrawal',
+            amount: Number(tx.amount),
+            date: new Date(tx.created_at).toLocaleDateString('fr-FR', { 
+              day: 'numeric', 
+              month: 'short', 
+              year: 'numeric' 
+            }),
+            status: tx.status as 'completed' | 'pending' | 'failed',
+            provider: tx.provider || undefined
+          }));
+          setTransactions(formattedTransactions);
+        }
       } catch (error) {
         console.error('Error:', error);
       } finally {
@@ -139,8 +202,8 @@ const Index: React.FC = () => {
 
   const greeting = getGreeting();
 
-  // Données vides pour les nouveaux comptes
-  const emptyWeeklyData: WeeklyDataPoint[] = [
+  // Données chargées depuis la base de données
+  const [weeklyData, setWeeklyData] = useState<WeeklyDataPoint[]>([
     { day: 'Lun', amount: 0 },
     { day: 'Mar', amount: 0 },
     { day: 'Mer', amount: 0 },
@@ -148,9 +211,9 @@ const Index: React.FC = () => {
     { day: 'Ven', amount: 0 },
     { day: 'Sam', amount: 0 },
     { day: 'Dim', amount: 0 },
-  ];
+  ]);
 
-  const emptyCategoryData: CategoryEarning[] = [
+  const [categoryData, setCategoryData] = useState<CategoryEarning[]>([
     { name: 'Action', value: 0, color: '#4f46e5' },
     { name: 'Arcade', value: 0, color: '#9333ea' },
     { name: 'Aventure', value: 0, color: '#10b981' },
@@ -158,9 +221,9 @@ const Index: React.FC = () => {
     { name: 'RPG', value: 0, color: '#f59e0b' },
     { name: 'Course', value: 0, color: '#0ea5e9' },
     { name: 'Sci-Fi', value: 0, color: '#06b6d4' },
-  ];
+  ]);
 
-  const emptyTransactions: Transaction[] = [];
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   // Gameplay State
   const [activeGame, setActiveGame] = useState<Game | null>(null);
@@ -431,15 +494,15 @@ const Index: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         <div className="lg:col-span-2 bg-card p-6 rounded-2xl border border-border shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold text-foreground">Trafic & Revenus</h3>
+            <h3 className="text-lg font-bold text-foreground">Revenus</h3>
           </div>
-          <RevenueChart data={emptyWeeklyData} />
+          <RevenueChart data={weeklyData} />
         </div>
 
         <div className="bg-card p-6 rounded-2xl border border-border shadow-sm flex flex-col">
           <h3 className="text-lg font-bold text-foreground mb-2">Gains par Catégorie</h3>
           <div className="flex-1 flex items-center justify-center">
-            <SourcesChart data={emptyCategoryData} />
+            <SourcesChart data={categoryData} />
           </div>
         </div>
       </div>
@@ -588,8 +651,8 @@ const Index: React.FC = () => {
           </div>
           
           <div className="overflow-y-auto max-h-[600px]">
-            {emptyTransactions.filter(tx => tx.type === 'withdrawal').length > 0 ? (
-              emptyTransactions.filter(tx => tx.type === 'withdrawal').map((tx) => (
+            {transactions.filter(tx => tx.type === 'withdrawal').length > 0 ? (
+              transactions.filter(tx => tx.type === 'withdrawal').map((tx) => (
                 <div key={tx.id} className="p-4 sm:p-6 border-b border-border/50 last:border-0 hover:bg-secondary/50 transition-colors flex items-center justify-between group">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 rounded-xl overflow-hidden bg-secondary flex items-center justify-center">
