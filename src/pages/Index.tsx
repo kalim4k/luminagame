@@ -883,41 +883,6 @@ const Index: React.FC = () => {
 
         {/* Main Content Area */}
         <main className="flex-1 p-4 md:p-8 lg:p-12 max-w-full overflow-hidden bg-background">
-          {/* Desktop Header - Hidden on tablet, visible on large screens only */}
-          <header className="hidden lg:flex justify-between items-center mb-10">
-            <div>
-               <span className="text-muted-foreground text-sm font-medium uppercase tracking-wider">Espace Membre</span>
-               <h2 className="text-lg font-bold text-foreground">
-                 {activeTab === Tab.DASHBOARD && "Vue d'ensemble"}
-                 {activeTab === Tab.GAMES && "Zone de Jeux"}
-                 {activeTab === Tab.WALLET && "Finances"}
-                 {activeTab === Tab.PROFILE && "Paramètres"}
-                 {activeTab === Tab.CONFIGURATION && "Configuration"}
-               </h2>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="Recherche..." 
-                  className="pl-10 pr-4 py-2.5 bg-muted rounded-full text-sm outline-none focus:ring-2 focus:ring-primary w-64 transition-all"
-                />
-              </div>
-              <button className="p-2 text-muted-foreground hover:bg-muted rounded-full transition-colors relative">
-                <Bell size={20} />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full"></span>
-              </button>
-              <div className="flex items-center space-x-2 pl-4 border-l border-border">
-                <div className="w-9 h-9 rounded-full overflow-hidden border border-border shadow-sm">
-                  <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
-                </div>
-                <div className="text-sm">
-                   <p className="font-bold text-foreground leading-none">{user.name}</p>
-                </div>
-              </div>
-            </div>
-          </header>
 
           {activeTab === Tab.DASHBOARD && renderDashboard()}
           {activeTab === Tab.GAMES && renderGames()}
