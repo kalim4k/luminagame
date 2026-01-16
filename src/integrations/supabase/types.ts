@@ -155,6 +155,7 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: undefined
       }
+      reset_daily_earnings: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
