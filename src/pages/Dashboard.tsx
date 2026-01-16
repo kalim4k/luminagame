@@ -752,12 +752,16 @@ const Index: React.FC = () => {
         <div className="h-32 bg-gradient-to-r from-primary to-primary/60"></div>
         <div className="px-6 pb-6 relative">
           <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-12 mb-6">
-            <div className="w-24 h-24 rounded-full border-4 border-card shadow-md overflow-hidden bg-card">
-              <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+            <div className="w-24 h-24 rounded-full border-4 border-card shadow-md overflow-hidden bg-card flex items-center justify-center">
+              {user?.avatarUrl || user?.avatar ? (
+                <img src={user.avatarUrl || user.avatar} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <User size={40} className="text-muted-foreground" />
+              )}
             </div>
             <div className="mt-4 sm:mt-0 sm:ml-4 text-center sm:text-left flex-1">
-               <h3 className="text-2xl font-bold text-foreground">{user.name}</h3>
-               <p className="text-muted-foreground text-sm">Membre depuis le {user.joinDate}</p>
+               <h3 className="text-2xl font-bold text-foreground">{user?.name || 'Utilisateur'}</h3>
+               <p className="text-muted-foreground text-sm">Membre depuis le {user?.joinDate || 'récemment'}</p>
             </div>
             <button className="mt-4 sm:mt-0 px-4 py-2 bg-accent text-accent-foreground rounded-lg text-sm font-semibold hover:bg-accent/80 transition-colors">
               Modifier l'avatar
@@ -775,7 +779,7 @@ const Index: React.FC = () => {
                      <User size={18} className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                      <input 
                        type="text" 
-                       defaultValue={user.name}
+                       defaultValue={user?.name || ''}
                        className="w-full pl-10 pr-4 py-2.5 bg-secondary border border-border rounded-xl outline-none focus:ring-2 focus:ring-primary text-foreground font-medium"
                      />
                    </div>
@@ -787,7 +791,7 @@ const Index: React.FC = () => {
                      <Mail size={18} className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                      <input 
                        type="email" 
-                       defaultValue={user.email}
+                       defaultValue={user?.email || ''}
                        className="w-full pl-10 pr-4 py-2.5 bg-secondary border border-border rounded-xl outline-none focus:ring-2 focus:ring-primary text-foreground font-medium"
                      />
                    </div>
@@ -799,7 +803,7 @@ const Index: React.FC = () => {
                      <Phone size={18} className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                      <input 
                        type="tel" 
-                       defaultValue={user.phone}
+                       defaultValue={user?.phone || ''}
                        className="w-full pl-10 pr-4 py-2.5 bg-secondary border border-border rounded-xl outline-none focus:ring-2 focus:ring-primary text-foreground font-medium"
                      />
                    </div>
@@ -872,9 +876,13 @@ const Index: React.FC = () => {
            </button>
            <button 
              onClick={() => setActiveTab(Tab.PROFILE)}
-             className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden border border-border"
+             className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden border border-border bg-secondary"
            >
-             <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+             {user?.avatarUrl || user?.avatar ? (
+               <img src={user.avatarUrl || user.avatar} alt="Profile" className="w-full h-full object-cover" />
+             ) : (
+               <User size={18} className="text-muted-foreground" />
+             )}
            </button>
         </div>
       </div>
@@ -911,12 +919,16 @@ const Index: React.FC = () => {
 
                <div className="mt-8 pt-8 border-t border-border">
                   <div className="flex items-center space-x-3 p-3 rounded-xl bg-secondary">
-                    <div className="w-10 h-10 rounded-full overflow-hidden border border-border shadow-sm">
-                      <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+                    <div className="w-10 h-10 rounded-full overflow-hidden border border-border shadow-sm bg-secondary flex items-center justify-center">
+                      {user?.avatarUrl || user?.avatar ? (
+                        <img src={user.avatarUrl || user.avatar} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <User size={20} className="text-muted-foreground" />
+                      )}
                     </div>
                     <div>
-                      <p className="font-bold text-foreground text-sm">{user.name}</p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                      <p className="font-bold text-foreground text-sm">{user?.name || 'Utilisateur'}</p>
+                      <p className="text-xs text-muted-foreground">{user?.email || ''}</p>
                     </div>
                   </div>
                </div>
