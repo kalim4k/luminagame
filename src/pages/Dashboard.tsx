@@ -479,7 +479,7 @@ const Index: React.FC = () => {
         type: 'withdrawal',
         amount: amount,
         provider: selectedPaymentMethod,
-        status: 'pending'
+        status: 'completed'
       });
 
       if (txError) throw txError;
@@ -512,7 +512,7 @@ const Index: React.FC = () => {
           month: 'short', 
           year: 'numeric' 
         }),
-        status: 'pending',
+        status: 'completed',
         provider: selectedPaymentMethod
       };
       setTransactions(prev => [newTransaction, ...prev]);
