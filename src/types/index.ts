@@ -1,6 +1,7 @@
 export enum Tab {
   DASHBOARD = 'dashboard',
   GAMES = 'games',
+  SOCIAL = 'social',
   WALLET = 'wallet',
   PROFILE = 'profile',
   CONFIGURATION = 'configuration'
@@ -52,4 +53,12 @@ export interface CategoryEarning {
   name: string;
   value: number;
   color: string;
+}
+
+export interface SocialMessage {
+  id: string;
+  user_id: string;
+  pseudo: string;
+  message: string;
+  created_at: string;
 }

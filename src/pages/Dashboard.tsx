@@ -32,7 +32,8 @@ import {
   Smartphone,
   Save,
   MoreHorizontal,
-  X
+  X,
+  MessageCircle
 } from 'lucide-react';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { RevenueChart } from '@/components/dashboard/RevenueChart';
@@ -41,6 +42,7 @@ import { GameCard } from '@/components/games/GameCard';
 import { GameSession } from '@/components/games/GameSession';
 import { GameBlockedModal } from '@/components/games/GameBlockedModal';
 import TriumphGame, { getTriumphPendingEarnings, clearTriumphSession } from '@/components/games/TriumphGame';
+import { SocialChat } from '@/components/social/SocialChat';
 import { GAMES, PAYMENT_PROVIDERS } from '@/constants';
 import { Game, Tab, UserStats, UserProfile, WeeklyDataPoint, CategoryEarning, Transaction } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -757,6 +759,17 @@ const Index: React.FC = () => {
       >
         <User size={20} />
         <span>Profil</span>
+      </button>
+      <button 
+        onClick={() => handleNavClick(Tab.SOCIAL)}
+        className={`w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl transition-all ${
+          activeTab === Tab.SOCIAL 
+            ? 'bg-accent text-accent-foreground font-semibold shadow-sm' 
+            : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+        }`}
+      >
+        <MessageCircle size={20} />
+        <span>Social</span>
       </button>
       <button 
         onClick={() => handleNavClick(Tab.CONFIGURATION)}
@@ -1505,6 +1518,15 @@ const Index: React.FC = () => {
 
           {activeTab === Tab.DASHBOARD && renderDashboard()}
           {activeTab === Tab.GAMES && renderGames()}
+          {activeTab === Tab.SOCIAL && (
+            <div key="social" className="animate-fade-in max-w-4xl mx-auto">
+              <SocialChat 
+                userId={userId} 
+                isConnected={isConnected} 
+                onGoToConfig={() => setActiveTab(Tab.CONFIGURATION)} 
+              />
+            </div>
+          )}
           {activeTab === Tab.WALLET && renderWallet()}
           {activeTab === Tab.PROFILE && renderProfile()}
           {activeTab === Tab.CONFIGURATION && renderConfiguration()}
@@ -1530,6 +1552,15 @@ const Index: React.FC = () => {
         >
           <Gamepad2 size={24} strokeWidth={activeTab === Tab.GAMES ? 2.5 : 2} />
           <span className="text-[10px] font-medium">Jeux</span>
+        </button>
+        <button 
+          onClick={() => setActiveTab(Tab.SOCIAL)}
+          className={`flex flex-col items-center space-y-1 ${
+            activeTab === Tab.SOCIAL ? 'text-primary' : 'text-muted-foreground'
+          }`}
+        >
+          <MessageCircle size={24} strokeWidth={activeTab === Tab.SOCIAL ? 2.5 : 2} />
+          <span className="text-[10px] font-medium">Social</span>
         </button>
         <button 
           onClick={() => setActiveTab(Tab.WALLET)}
