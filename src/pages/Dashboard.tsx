@@ -1519,13 +1519,12 @@ const Index: React.FC = () => {
           {activeTab === Tab.DASHBOARD && renderDashboard()}
           {activeTab === Tab.GAMES && renderGames()}
           {activeTab === Tab.SOCIAL && (
-            <div key="social" className="animate-fade-in max-w-4xl mx-auto">
-              <SocialChat 
-                userId={userId} 
-                isConnected={isConnected} 
-                onGoToConfig={() => setActiveTab(Tab.CONFIGURATION)} 
-              />
-            </div>
+            <SocialChat 
+              userId={userId} 
+              isConnected={isConnected} 
+              onGoToConfig={() => setActiveTab(Tab.CONFIGURATION)}
+              onClose={() => setActiveTab(Tab.DASHBOARD)}
+            />
           )}
           {activeTab === Tab.WALLET && renderWallet()}
           {activeTab === Tab.PROFILE && renderProfile()}
