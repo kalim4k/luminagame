@@ -1532,7 +1532,8 @@ const Index: React.FC = () => {
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation */}
+      {/* Mobile Bottom Navigation - Hidden when Social tab is active (full screen) */}
+      {activeTab !== Tab.SOCIAL && (
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border px-6 py-3 flex justify-between items-center z-50 pb-safe shadow-[0_-4px_10px_-1px_rgba(0,0,0,0.05)]">
         <button 
           onClick={() => setActiveTab(Tab.DASHBOARD)}
@@ -1554,11 +1555,9 @@ const Index: React.FC = () => {
         </button>
         <button 
           onClick={() => setActiveTab(Tab.SOCIAL)}
-          className={`flex flex-col items-center space-y-1 ${
-            activeTab === Tab.SOCIAL ? 'text-primary' : 'text-muted-foreground'
-          }`}
+          className="flex flex-col items-center space-y-1 text-muted-foreground"
         >
-          <MessageCircle size={24} strokeWidth={activeTab === Tab.SOCIAL ? 2.5 : 2} />
+          <MessageCircle size={24} strokeWidth={2} />
           <span className="text-[10px] font-medium">Social</span>
         </button>
         <button 
@@ -1580,6 +1579,7 @@ const Index: React.FC = () => {
           <span className="text-[10px] font-medium">Menu</span>
         </button>
       </div>
+      )}
 
       {/* Game Modal */}
       {activeGame && activeGame.title === 'Triumph Game' ? (
