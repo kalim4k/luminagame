@@ -160,6 +160,32 @@ export const SocialChat: React.FC<SocialChatProps> = ({
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
   };
 
+  // Fonction pour détecter et rendre les liens cliquables
+  const renderMessageWithLinks = (text: string, isOwn: boolean) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    
+    return parts.map((part, index) => {
+      if (urlRegex.test(part)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`underline hover:opacity-80 transition-opacity ${
+              isOwn ? 'text-primary-foreground' : 'text-primary'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
   // Grouper les messages par date
   const groupedMessages = messages.reduce((groups, message) => {
     const date = formatDate(message.created_at);
@@ -236,7 +262,7 @@ export const SocialChat: React.FC<SocialChatProps> = ({
                           <p className={`text-xs font-bold mb-1 ${isOwn ? 'text-primary-foreground/80' : 'text-primary'}`}>
                             {msg.pseudo}
                           </p>
-                          <p className="text-sm break-words">{msg.message}</p>
+                          <p className="text-sm break-words">{renderMessageWithLinks(msg.message, isOwn)}</p>
                           <p className={`text-[10px] mt-1 ${isOwn ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
                             {formatTime(msg.created_at)}
                           </p>
