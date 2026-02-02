@@ -43,6 +43,7 @@ import { GameSession } from '@/components/games/GameSession';
 import { GameBlockedModal } from '@/components/games/GameBlockedModal';
 import TriumphGame, { getTriumphPendingEarnings, clearTriumphSession } from '@/components/games/TriumphGame';
 import { SocialChat } from '@/components/social/SocialChat';
+import { NotificationSettings } from '@/components/profile/NotificationSettings';
 import { GAMES, PAYMENT_PROVIDERS } from '@/constants';
 import { Game, Tab, UserStats, UserProfile, WeeklyDataPoint, CategoryEarning, Transaction } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -1379,15 +1380,7 @@ const Index: React.FC = () => {
               <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">Préférences & Sécurité</h4>
               
               <div className="space-y-3">
-                 <button className="w-full flex items-center justify-between p-4 rounded-xl border border-border hover:bg-secondary transition-colors group">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-accent text-accent-foreground rounded-lg mr-3 group-hover:bg-primary/20 transition-colors">
-                        <Bell size={20} />
-                      </div>
-                      <span className="font-medium text-foreground">Notifications</span>
-                    </div>
-                    <ChevronRight size={18} className="text-muted-foreground" />
-                 </button>
+                 <NotificationSettings userId={userId} />
 
                  <button 
                     onClick={() => setActiveTab(Tab.CONFIGURATION)}
