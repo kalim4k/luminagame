@@ -1,131 +1,179 @@
 
 
-# Plan: Feature "Social" - Chat de groupe
+# Plan: Notifications Push pour le Chat Social
 
 ## Apercu
 
-Ajout d'un nouvel onglet "Social" dans la barre de navigation mobile qui permet aux utilisateurs de discuter dans un chat de groupe style WhatsApp. Seuls les utilisateurs ayant une configuration valide (API Key + IP Proxy corrects) peuvent envoyer des messages.
+Implementation des notifications push serveur (Web Push) pour notifier les utilisateurs des nouveaux messages dans le chat social, meme quand l'application est fermee.
 
 ## Architecture
 
-### 1. Base de donnees - Nouvelle table `social_messages`
+L'implementation Web Push necessite 3 composants:
+1. **Service Worker** - Recoit et affiche les notifications
+2. **Frontend** - Demande la permission et s'abonne aux notifications  
+3. **Backend (Edge Function)** - Envoie les notifications aux utilisateurs abonnes
 
-Creation d'une table pour stocker les messages du chat:
+```text
++----------------+     +------------------+     +-----------------+
+|   Utilisateur  |     |   Edge Function  |     |  Push Service   |
+|    (Browser)   |     |   (send-push)    |     | (Google/Mozilla)|
++----------------+     +------------------+     +-----------------+
+        |                       |                       |
+        | 1. S'abonner          |                       |
+        |--------------------------------------------->|
+        |                       |                       |
+        | 2. Recevoir subscription                      |
+        |<---------------------------------------------|
+        |                       |                       |
+        | 3. Envoyer subscription                       |
+        |---------------------->| (stocke en BDD)       |
+        |                       |                       |
+        |                       | 4. Nouveau message    |
+        |                       |---------------------->|
+        |                       |                       |
+        |                       | 5. Push notification  |
+        |<---------------------------------------------|
+```
+
+## Etapes d'implementation
+
+### 1. Generation des cles VAPID
+
+Les cles VAPID (Voluntary Application Server Identification) sont necessaires pour authentifier votre serveur aupres des services de push.
+
+**Action requise**: Vous devrez generer une paire de cles VAPID et les ajouter comme secrets:
+- `VAPID_PUBLIC_KEY` - Cle publique (utilisee cote client)
+- `VAPID_PRIVATE_KEY` - Cle privee (utilisee cote serveur)
+- `VAPID_SUBJECT` - Email de contact (ex: mailto:contact@votresite.com)
+
+### 2. Base de donnees - Table `push_subscriptions`
 
 ```sql
-CREATE TABLE public.social_messages (
+CREATE TABLE public.push_subscriptions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
-  pseudo text NOT NULL,
-  message text NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now()
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  endpoint text NOT NULL UNIQUE,
+  p256dh text NOT NULL,
+  auth text NOT NULL,
+  created_at timestamptz DEFAULT now()
 );
 
--- RLS: Tout le monde peut lire les messages
-CREATE POLICY "Anyone can view messages"
-  ON public.social_messages FOR SELECT
-  USING (true);
+-- RLS policies
+CREATE POLICY "Users can manage their subscriptions"
+  ON public.push_subscriptions FOR ALL
+  USING (auth.uid() = user_id);
 
--- RLS: Seuls les utilisateurs authentifies peuvent envoyer des messages
-CREATE POLICY "Authenticated users can insert messages"
-  ON public.social_messages FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
--- Activer le realtime pour les mises a jour instantanees
-ALTER PUBLICATION supabase_realtime ADD TABLE public.social_messages;
+-- Index pour recherche rapide
+CREATE INDEX idx_push_subscriptions_user_id ON public.push_subscriptions(user_id);
 ```
 
-### 2. Types TypeScript
+### 3. Service Worker personnalise
 
-Ajout d'un nouveau Tab et interface:
+Configuration de vite-plugin-pwa pour injecter le code de gestion des notifications push:
+
+```javascript
+// sw.js - Service Worker
+self.addEventListener('push', (event) => {
+  const data = event.data?.json() ?? {};
+  const options = {
+    body: data.body,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    tag: data.tag || 'social-message',
+    data: { url: data.url || '/' }
+  };
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'LUMI GAMES', options)
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow(event.notification.data.url)
+  );
+});
+```
+
+### 4. Hook React `usePushNotifications`
 
 ```typescript
-// Dans src/types/index.ts
-export enum Tab {
-  DASHBOARD = 'dashboard',
-  GAMES = 'games',
-  WALLET = 'wallet',
-  PROFILE = 'profile',
-  CONFIGURATION = 'configuration',
-  SOCIAL = 'social'  // Nouveau
-}
-
-export interface SocialMessage {
-  id: string;
-  userId: string;
-  pseudo: string;
-  message: string;
-  createdAt: string;
-}
+// src/hooks/usePushNotifications.ts
+export const usePushNotifications = (userId: string | null) => {
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSupported, setIsSupported] = useState(false);
+  
+  // Verifie le support
+  // Demande la permission
+  // S'abonne au push
+  // Enregistre la subscription en BDD
+  
+  return { isSubscribed, isSupported, subscribe, unsubscribe };
+};
 ```
 
-### 3. Interface utilisateur - Page Social
+### 5. Edge Function `send-push`
 
-Design moderne et epure avec:
+```typescript
+// supabase/functions/send-push/index.ts
+import webpush from 'web-push';
 
-**Zone de messages:**
-- Liste scrollable des messages
-- Chaque message affiche: pseudo, contenu, heure
-- Messages de l'utilisateur courant alignes a droite (style WhatsApp)
-- Bulles de messages avec couleurs differenciees
-- Scroll automatique vers le bas pour les nouveaux messages
+// Configure VAPID
+webpush.setVapidDetails(
+  Deno.env.get('VAPID_SUBJECT'),
+  Deno.env.get('VAPID_PUBLIC_KEY'),
+  Deno.env.get('VAPID_PRIVATE_KEY')
+);
 
-**Zone de saisie (visible uniquement si `isConnected === true`):**
-- Champ pseudo (sauvegarde dans localStorage pour persistence)
-- Champ message avec placeholder
-- Bouton d'envoi
-- Animation d'envoi
-
-**Etat deconnecte:**
-- Message explicatif avec bouton vers Configuration
-- Design coherent avec le modal GameBlockedModal existant
-
-### 4. Navigation mobile
-
-Modification de la barre de navigation en bas:
-
-```
-Actuel: [Accueil] [Jeux] [Retraits] [Menu]
-Nouveau: [Accueil] [Jeux] [Social] [Retraits] [Menu]
+// Recoit les nouveaux messages et envoie les notifications
+// a tous les utilisateurs abonnes (sauf l'expediteur)
 ```
 
-Icone utilisee: `MessageCircle` de lucide-react
+### 6. Integration dans le Chat Social
 
-### 5. Fonctionnalites temps reel
+Modification de `SocialChat.tsx` pour:
+- Afficher un bouton pour activer les notifications
+- Appeler l'edge function `send-push` apres chaque nouveau message
 
-Utilisation de Supabase Realtime pour:
-- Recevoir les nouveaux messages instantanement
-- Mettre a jour la liste sans rechargement
+### 7. Composant UI pour activer les notifications
+
+Un bouton discret dans le header du chat permettant d'activer/desactiver les notifications.
 
 ---
 
-## Details techniques
+## Fichiers a creer/modifier
 
-### Fichiers a modifier
+| Fichier | Action |
+|---------|--------|
+| Migration SQL | Creer table `push_subscriptions` |
+| `public/sw-push.js` | Service worker pour push |
+| `vite.config.ts` | Configurer injection du SW push |
+| `src/hooks/usePushNotifications.ts` | Hook de gestion des notifications |
+| `supabase/functions/send-push/index.ts` | Edge function pour envoyer les notifications |
+| `src/components/social/SocialChat.tsx` | Ajouter bouton activation + appel edge function |
+| `.env` | Ajouter `VITE_VAPID_PUBLIC_KEY` |
 
-| Fichier | Modification |
-|---------|--------------|
-| `src/types/index.ts` | Ajout Tab.SOCIAL et interface SocialMessage |
-| `src/pages/Dashboard.tsx` | Ajout import MessageCircle, etat messages, fonction renderSocial(), modification navigation mobile et sidebar |
-| Migration SQL | Creation table social_messages avec RLS et realtime |
+---
 
-### Validation des messages
+## Secrets a configurer
 
-- Pseudo: minimum 2 caracteres, maximum 20 caracteres
-- Message: minimum 1 caractere, maximum 500 caracteres
-- Verification `isConnected` avant d'afficher le formulaire d'envoi
+Avant l'implementation, vous devrez ajouter ces secrets:
 
-### Design UI
+1. **VAPID_PUBLIC_KEY** - Cle publique VAPID
+2. **VAPID_PRIVATE_KEY** - Cle privee VAPID  
+3. **VAPID_SUBJECT** - Email de contact (format: mailto:email@example.com)
 
-Style coherent avec l'application existante:
-- Cards avec `bg-card rounded-2xl border border-border`
-- Boutons primaires avec `bg-primary text-primary-foreground rounded-xl`
-- Animations `animate-fade-in` pour les nouveaux messages
-- Couleurs: messages de l'utilisateur en `bg-primary`, autres en `bg-secondary`
+Pour generer les cles VAPID, vous pouvez utiliser:
+```bash
+npx web-push generate-vapid-keys
+```
 
-### Gestion du pseudo
+---
 
-- Sauvegarde automatique du pseudo dans localStorage (`lumina_social_pseudo`)
-- Pre-remplissage lors des visites suivantes
-- Possibilite de le modifier a tout moment
+## Limitations et considerations
+
+- Les notifications push ne fonctionnent que sur les navigateurs modernes (Chrome, Firefox, Edge, Safari 16+)
+- Sur iOS, les notifications push ne sont supportees que si l'app est installee en PWA
+- L'utilisateur doit explicitement accepter les notifications
+- Les notifications sont envoyees a tous les utilisateurs abonnes (sauf l'expediteur du message)
 
