@@ -120,8 +120,7 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
 
     setGameOver(false);
     
-    // Pre-populate with multiple rows to simulate high level start
-    const INITIAL_ROWS = 6;
+    const INITIAL_ROWS = 4;
     for (let i = 0; i < INITIAL_ROWS; i++) {
       generateRow();
     }
@@ -300,11 +299,11 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
             if (prevBallX >= b.x && prevBallX <= b.x + BLOCK_WIDTH) ball.vy = -ball.vy; else ball.vx = -ball.vx;
             b.hp--;
 
-            frameEarnings += 2;
+            frameEarnings += 0.2;
             comboRef.current++;
             if (comboRef.current % 10 === 0) shakeIntensityRef.current = Math.min(10, comboRef.current / 5);
 
-            floatingTextsRef.current.push({ x: ball.x, y: ball.y - 15, text: "+2", life: 0.8, color: '#fbbf24', vy: -1.5 });
+            floatingTextsRef.current.push({ x: ball.x, y: ball.y - 15, text: "+0.2", life: 0.8, color: '#fbbf24', vy: -1.5 });
             if (b.hp <= 0) {
               for (let k = 0; k < 8; k++) particlesRef.current.push({ x: b.x + BLOCK_WIDTH / 2, y: b.y + BLOCK_HEIGHT / 2, vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8, life: 1.0, color: b.color });
               blocksRef.current.splice(i, 1);
