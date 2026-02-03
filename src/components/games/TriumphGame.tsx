@@ -119,7 +119,12 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
     clearLocalStorage();
 
     setGameOver(false);
-    generateRow();
+    
+    // Pre-populate with multiple rows to simulate high level start
+    const INITIAL_ROWS = 6;
+    for (let i = 0; i < INITIAL_ROWS; i++) {
+      generateRow();
+    }
   };
 
   const generateRow = () => {
