@@ -1580,6 +1580,8 @@ const Index: React.FC = () => {
           onBack={handleTriumphClose}
           balance={stats.availableBalance + stats.earningsToday}
           updateBalance={handleTriumphBalanceUpdate}
+          initialTime={activeGame.durationSec}
+          onTimeUpdate={() => {}}
         />
       ) : activeGame && (
         <GameSession 
