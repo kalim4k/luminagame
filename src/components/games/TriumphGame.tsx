@@ -37,8 +37,6 @@ interface TriumphGameProps {
   onBack: () => void;
   balance: number;
   updateBalance: (amount: number) => void;
-  initialTime: number;
-  onTimeUpdate: (secondsUsed: number) => void;
 }
 
 const LOCALSTORAGE_KEY = 'triumph_session';
@@ -49,7 +47,9 @@ interface TriumphSession {
   gameId: string;
 }
 
-const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalance, initialTime, onTimeUpdate }) => {
+const START_LEVEL = 300; // Start at high level for challenging gameplay
+
+const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalance }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameStateRef = useRef<GameState>('AIMING');
   const ballsRef = useRef<Ball[]>([]);
@@ -57,7 +57,7 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
   const particlesRef = useRef<Particle[]>([]);
   const floatingTextsRef = useRef<FloatingText[]>([]);
   const launcherPosRef = useRef({ x: CANVAS_WIDTH / 2 });
-  const scoreRef = useRef(1);
+  const scoreRef = useRef(START_LEVEL);
   const ballsReturnedRef = useRef(0);
   const comboRef = useRef(0);
   const shakeIntensityRef = useRef(0);
@@ -70,15 +70,7 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
   const isFiringRef = useRef(false);
   const sessionIdRef = useRef<string>(crypto.randomUUID());
 
-  // Timer Refs
-  const lastTimeRef = useRef<number>(Date.now());
-  const accumulatedTimeRef = useRef<number>(0);
-  const timeLeftRef = useRef<number>(initialTime);
-
-  const [uiScore, setUiScore] = useState(1);
-  const [uiTime, setUiTime] = useState(initialTime);
   const [gameOver, setGameOver] = useState(false);
-  const [timeUp, setTimeUp] = useState(false);
 
   // Sauvegarder les gains dans localStorage
   const saveToLocalStorage = (earnings: number) => {
@@ -110,7 +102,7 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
 
   // --- Init ---
   const initGame = () => {
-    scoreRef.current = 1;
+    scoreRef.current = START_LEVEL;
     ballsReturnedRef.current = 0;
     launcherPosRef.current = { x: CANVAS_WIDTH / 2 };
     totalSessionEarningsRef.current = 0;
@@ -123,18 +115,10 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
     isFiringRef.current = false;
     sessionIdRef.current = crypto.randomUUID();
 
-    // Timer Reset
-    timeLeftRef.current = initialTime;
-    setUiTime(initialTime);
-    lastTimeRef.current = Date.now();
-    accumulatedTimeRef.current = 0;
-
     // Effacer toute session précédente
     clearLocalStorage();
 
     setGameOver(false);
-    setTimeUp(false);
-    setUiScore(1);
     generateRow();
   };
 
@@ -221,33 +205,9 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
   };
 
   const update = () => {
-    if (!canvasRef.current || gameOver || timeUp) return;
+    if (!canvasRef.current || gameOver) return;
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
-
-    // --- Timer Logic ---
-    const now = Date.now();
-    const dt = (now - lastTimeRef.current) / 1000;
-    lastTimeRef.current = now;
-
-    if (gameStateRef.current === 'SHOOTING' || gameStateRef.current === 'AIMING') {
-      timeLeftRef.current -= dt;
-      accumulatedTimeRef.current += dt;
-
-      if (accumulatedTimeRef.current >= 1) {
-        onTimeUpdate(1);
-        accumulatedTimeRef.current -= 1;
-      }
-
-      if (timeLeftRef.current <= 0) {
-        timeLeftRef.current = 0;
-        setUiTime(0);
-        setTimeUp(true);
-        setGameOver(true);
-        return;
-      }
-      setUiTime(Math.ceil(timeLeftRef.current));
-    }
 
     // --- Shake Logic ---
     let shakeX = 0, shakeY = 0;
@@ -379,7 +339,6 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
 
     if (gameStateRef.current === 'SHOOTING' && !isFiringRef.current && ballsRef.current.filter(b => b.active).length === 0) {
       scoreRef.current++;
-      setUiScore(scoreRef.current);
       ballsRef.current = [];
       generateRow();
 
@@ -437,21 +396,11 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
           <button onClick={onBack} className="p-3 bg-white/10 rounded-full backdrop-blur-md border border-white/10 active:scale-95 transition">
             <IconChevronLeft className="w-6 h-6 text-white" />
           </button>
-          <div className="flex flex-col">
-            <div className="text-2xl font-black text-white leading-none">{uiScore}</div>
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Niveau</div>
-          </div>
         </div>
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
           <div className="text-4xl font-black text-white tracking-tighter drop-shadow-2xl flex items-baseline gap-2">
             {balance.toLocaleString()}<span className="text-xl text-white/80 font-bold">FCFA</span>
           </div>
-        </div>
-        <div className="flex flex-col items-end">
-          <div className={`text-2xl font-black leading-none flex items-center gap-1 ${uiTime < 10 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
-            {uiTime}s
-          </div>
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Temps</div>
         </div>
       </div>
       <div className="absolute inset-0 z-10 flex items-center justify-center">
@@ -467,23 +416,13 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
           onMouseMove={handleMove}
           onMouseUp={handleEnd}
         />
-        {uiScore === 1 && gameStateRef.current === 'AIMING' && !dragStartRef.current && (
-          <div className="absolute bottom-1/4 left-0 right-0 text-center pointer-events-none animate-pulse opacity-60 z-20">
-            <div className="text-sm font-bold text-white mb-2 tracking-widest uppercase">Glisser pour viser</div>
-            <div className="w-1 h-16 bg-gradient-to-b from-white to-transparent mx-auto"></div>
-          </div>
-        )}
-        {(gameOver || timeUp) && (
+        {gameOver && (
           <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center animate-scale-in">
             <IconTrophy className="w-20 h-20 text-yellow-400 mb-6" />
             <div className="text-4xl sm:text-6xl font-black text-white mb-4 tracking-tighter drop-shadow-sm uppercase text-center px-4">
-              {timeUp ? "Temps Écoulé" : "ÉCHEC"}
+              PARTIE TERMINÉE
             </div>
             <div className="flex gap-8 mb-10 text-center">
-              <div>
-                <div className="text-gray-400 text-xs font-bold uppercase">Niveau</div>
-                <div className="text-3xl font-black text-white">{uiScore}</div>
-              </div>
               <div>
                 <div className="text-gray-400 text-xs font-bold uppercase">Gains</div>
                 <div className="text-3xl font-black text-yellow-400">{totalSessionEarningsRef.current} <span className="text-sm">FCFA</span></div>
