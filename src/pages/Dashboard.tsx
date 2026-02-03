@@ -44,6 +44,7 @@ import { GameBlockedModal } from '@/components/games/GameBlockedModal';
 import TriumphGame, { getTriumphPendingEarnings, clearTriumphSession } from '@/components/games/TriumphGame';
 import { SocialChat } from '@/components/social/SocialChat';
 import { NotificationSettings } from '@/components/profile/NotificationSettings';
+import { AdminBroadcastButton } from '@/components/profile/AdminBroadcastButton';
 import { GAMES, PAYMENT_PROVIDERS } from '@/constants';
 import { Game, Tab, UserStats, UserProfile, WeeklyDataPoint, CategoryEarning, Transaction } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -1381,6 +1382,8 @@ const Index: React.FC = () => {
               
               <div className="space-y-3">
                  <NotificationSettings userId={userId} />
+
+                 <AdminBroadcastButton userName={user?.name} />
 
                  <button 
                     onClick={() => setActiveTab(Tab.CONFIGURATION)}
