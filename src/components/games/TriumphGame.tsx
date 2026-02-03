@@ -262,14 +262,6 @@ const TriumphGame: React.FC<TriumphGameProps> = ({ onBack, balance, updateBalanc
     ctx.fillStyle = '#000000';
     ctx.fillRect(-shakeX, -shakeY, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    // Combo Text
-    if (comboRef.current > 5 && gameStateRef.current === 'SHOOTING') {
-      const comboSize = Math.min(100, 40 + comboRef.current * 1.5);
-      ctx.font = `900 ${comboSize}px Inter, sans-serif`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#334155'; ctx.globalAlpha = 0.3;
-      ctx.fillText(`${comboRef.current}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-    }
 
     ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(0, FLOOR_Y); ctx.lineTo(CANVAS_WIDTH, FLOOR_Y); ctx.stroke();
