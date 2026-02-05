@@ -120,20 +120,39 @@ export const useOneSignal = (userId: string | null) => {
   }, [userId]);
 
   // Save subscription to database
-  const saveSubscription = async (playerId: string, currentUserId: string) => {
-    if (!currentUserId) return;
+  const saveSubscription = async (playerId: string, currentUserId: string | null) => {
+    if (!playerId) {
+      console.error('No player ID provided');
+      return;
+    }
+    
+    // If no userId, try to get it from the current session
+    let userIdToUse = currentUserId;
+    if (!userIdToUse) {
+      const { data: { user } } = await supabase.auth.getUser();
+      userIdToUse = user?.id || null;
+    }
+    
+    if (!userIdToUse) {
+      console.log('No user logged in, cannot save subscription');
+      return;
+    }
 
     try {
+      console.log('Saving subscription:', { playerId, userId: userIdToUse });
+      
       // Upsert the subscription
       const { error } = await supabase
         .from('onesignal_subscriptions')
         .upsert(
-          { user_id: currentUserId, player_id: playerId },
+          { user_id: userIdToUse, player_id: playerId },
           { onConflict: 'player_id' }
         );
 
       if (error) {
         console.error('Error saving OneSignal subscription:', error);
+      } else {
+        console.log('Subscription saved successfully');
       }
     } catch (error) {
       console.error('Error saving subscription:', error);
@@ -185,7 +204,10 @@ export const useOneSignal = (userId: string | null) => {
       const subscriptionId = await window.OneSignal.User.PushSubscription.id;
       const optedIn = await window.OneSignal.User.PushSubscription.optedIn;
 
-      if (optedIn && subscriptionId && userId) {
+      console.log('Subscription result:', { subscriptionId, optedIn, userId });
+
+      if (optedIn && subscriptionId) {
+        // Always try to save, saveSubscription will fetch userId if needed
         await saveSubscription(subscriptionId, userId);
       }
 
