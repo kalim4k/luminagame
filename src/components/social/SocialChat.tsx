@@ -4,8 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { SocialMessage } from '@/types';
-import { useOneSignal } from '@/hooks/useOneSignal';
-import { NotificationToggle } from './NotificationToggle';
 
 interface SocialChatProps {
   userId: string | null;
@@ -31,16 +29,6 @@ export const SocialChat: React.FC<SocialChatProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [connectedUsers, setConnectedUsers] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
-  
-  // OneSignal hook for push notifications
-  const {
-    isSupported: isPushSupported,
-    isSubscribed: isPushSubscribed,
-    isLoading: isPushLoading,
-    permission: pushPermission,
-    subscribe: subscribePush,
-    unsubscribe: unsubscribePush,
-  } = useOneSignal(userId);
 
   // Générer un nombre aléatoire d'utilisateurs connectés entre 112 et 230
   useEffect(() => {
@@ -151,19 +139,6 @@ export const SocialChat: React.FC<SocialChatProps> = ({
       console.error('Error sending message:', error);
     } else {
       setNewMessage('');
-      
-      // Send push notification to other users
-      try {
-        await supabase.functions.invoke('send-push-notification', {
-          body: {
-            senderUserId: userId,
-            senderPseudo: pseudoText,
-            message: messageText
-          }
-        });
-      } catch (pushError) {
-        console.error('Error sending push notification:', pushError);
-      }
     }
     
     setIsSending(false);
@@ -237,18 +212,6 @@ export const SocialChat: React.FC<SocialChatProps> = ({
         </button>
         
         <div className="flex items-center gap-2 text-sm">
-          {/* Notification toggle button */}
-          {isConnected && (
-            <NotificationToggle
-              isSupported={isPushSupported}
-              isSubscribed={isPushSubscribed}
-              isLoading={isPushLoading}
-              permission={pushPermission}
-              onSubscribe={subscribePush}
-              onUnsubscribe={unsubscribePush}
-            />
-          )}
-          
           <div className="flex items-center gap-1.5 bg-success/10 text-success px-3 py-1.5 rounded-full">
             <Users size={14} />
             <span className="font-semibold">{connectedUsers}</span>
