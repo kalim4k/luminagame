@@ -29,6 +29,72 @@ const generateNotificationMessage = () => {
   };
 };
 
+// Send notification using segments
+const sendWithSegments = async (appId: string, apiKey: string, notification: { heading: string; content: string }) => {
+  console.log('[Broadcast] Trying with included_segments: Subscribed Users');
+  
+  const response = await fetch('https://onesignal.com/api/v1/notifications', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Basic ${apiKey}`,
+    },
+    body: JSON.stringify({
+      app_id: appId,
+      included_segments: ['Subscribed Users'],
+      headings: { en: notification.heading, fr: notification.heading },
+      contents: { en: notification.content, fr: notification.content },
+      url: '/dashboard?tab=wallet',
+      chrome_web_icon: '/icons/icon-192.png',
+      firefox_icon: '/icons/icon-192.png',
+    }),
+  });
+
+  return { response, result: await response.json() };
+};
+
+// Send notification using specific subscription IDs from database
+const sendWithSubscriptionIds = async (
+  appId: string, 
+  apiKey: string, 
+  notification: { heading: string; content: string },
+  supabase: any
+) => {
+  console.log('[Broadcast] Fallback: fetching subscription IDs from database');
+  
+  // Get all subscription IDs from database
+  const { data: subscriptions, error } = await supabase
+    .from('onesignal_subscriptions')
+    .select('player_id');
+  
+  if (error || !subscriptions || subscriptions.length === 0) {
+    console.log('[Broadcast] No subscriptions in database:', error);
+    return { response: null, result: { error: 'No subscriptions in database' } };
+  }
+  
+  const playerIds = subscriptions.map((s: { player_id: string }) => s.player_id);
+  console.log('[Broadcast] Found', playerIds.length, 'subscription IDs:', playerIds);
+  
+  const response = await fetch('https://onesignal.com/api/v1/notifications', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Basic ${apiKey}`,
+    },
+    body: JSON.stringify({
+      app_id: appId,
+      include_subscription_ids: playerIds,
+      headings: { en: notification.heading, fr: notification.heading },
+      contents: { en: notification.content, fr: notification.content },
+      url: '/dashboard?tab=wallet',
+      chrome_web_icon: '/icons/icon-192.png',
+      firefox_icon: '/icons/icon-192.png',
+    }),
+  });
+
+  return { response, result: await response.json() };
+};
+
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -100,52 +166,73 @@ Deno.serve(async (req) => {
     // Générer le message aléatoire
     const notification = generateNotificationMessage();
     
-    console.log('Sending broadcast notification to all subscribed users');
+    console.log('[Broadcast] Sending notification to all subscribed users');
+    console.log('[Broadcast] Message:', notification.content);
 
-    // Send notification to ALL subscribed users via OneSignal API
-    // Using "included_segments" with "Subscribed Users" to target everyone
-    const notificationResponse = await fetch('https://onesignal.com/api/v1/notifications', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${ONESIGNAL_REST_API_KEY}`,
-      },
-      body: JSON.stringify({
-        app_id: ONESIGNAL_APP_ID,
-        included_segments: ['Subscribed Users'],
-        headings: { en: notification.heading, fr: notification.heading },
-        contents: { en: notification.content, fr: notification.content },
-        url: '/dashboard?tab=wallet',
-        chrome_web_icon: '/icons/icon-192.png',
-        firefox_icon: '/icons/icon-192.png',
-      }),
-    });
+    // First attempt: use segments  
+    let segmentResult = await sendWithSegments(
+      ONESIGNAL_APP_ID,
+      ONESIGNAL_REST_API_KEY,
+      notification
+    );
+    
+    let notificationResponse = segmentResult.response;
+    let notificationResult = segmentResult.result;
 
-    const notificationResult = await notificationResponse.json();
-    console.log('OneSignal response:', notificationResult);
+    console.log('[Broadcast] Segment response:', JSON.stringify(notificationResult));
 
-    if (!notificationResponse.ok) {
-      console.error('OneSignal error:', notificationResult);
+    // Check if segments failed with "All included players are not subscribed"
+    const segmentFailed = !notificationResponse?.ok || 
+      (notificationResult.errors && notificationResult.errors.includes('All included players are not subscribed'));
+
+    if (segmentFailed) {
+      console.log('[Broadcast] Segment method failed, trying with subscription IDs...');
+      
+      // Fallback: try with specific subscription IDs from database
+      const fallbackResult = await sendWithSubscriptionIds(
+        ONESIGNAL_APP_ID,
+        ONESIGNAL_REST_API_KEY,
+        notification,
+        supabase
+      );
+      
+      if (fallbackResult.response) {
+        notificationResponse = fallbackResult.response;
+      }
+      notificationResult = fallbackResult.result;
+      
+      console.log('[Broadcast] Fallback response:', JSON.stringify(notificationResult));
+    }
+
+    // Check final result
+    if (!notificationResponse?.ok && !notificationResult.id) {
+      console.error('[Broadcast] Final error:', notificationResult);
       return new Response(
-        JSON.stringify({ error: 'Failed to send notification', details: notificationResult }),
+        JSON.stringify({ 
+          error: 'Failed to send notification', 
+          details: notificationResult,
+          tried: segmentFailed ? 'segments + subscription_ids' : 'segments'
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const recipientsCount = notificationResult.recipients || 'tous les';
+    console.log('[Broadcast] Success! Recipients:', recipientsCount);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         notified: recipientsCount,
         message: notification.content,
-        result: notificationResult 
+        result: notificationResult,
+        method: segmentFailed ? 'subscription_ids' : 'segments'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error in send-broadcast-notification:', error);
+    console.error('[Broadcast] Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({ error: errorMessage }),
