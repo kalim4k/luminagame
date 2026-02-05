@@ -1,8 +1,7 @@
 import React from 'react';
-import { Bell, BellOff, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
+import { Bell, BellOff, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useOneSignal } from '@/hooks/useOneSignal';
-import { toast } from '@/components/ui/use-toast';
 
 interface NotificationSettingsProps {
   userId: string | null;
@@ -13,11 +12,9 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ user
     isSupported,
     isSubscribed,
     isLoading,
-    isSyncing,
     permission,
     subscribe,
     unsubscribe,
-    syncSubscription,
   } = useOneSignal(userId);
 
   const handleToggle = async () => {
@@ -25,22 +22,6 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ user
       await unsubscribe();
     } else {
       await subscribe();
-    }
-  };
-
-  const handleResync = async () => {
-    const success = await syncSubscription();
-    if (success) {
-      toast({
-        title: "Synchronisation réussie",
-        description: "Votre abonnement aux notifications a été synchronisé.",
-      });
-    } else {
-      toast({
-        title: "Échec de la synchronisation",
-        description: "Impossible de synchroniser. Vérifiez que les notifications sont activées.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -104,19 +85,6 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ user
         <div className="flex items-center gap-3">
           {isSubscribed && (
             <CheckCircle size={18} className="text-success" />
-          )}
-          
-          {isSubscribed && (
-            <Button
-              onClick={handleResync}
-              disabled={isSyncing}
-              variant="ghost"
-              size="sm"
-              className="rounded-xl"
-              title="Resynchroniser"
-            >
-              <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
-            </Button>
           )}
           
           <Button
