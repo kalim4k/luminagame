@@ -1,59 +1,115 @@
 
+Objectif : expliquer pourquoi OneSignal affiche “Delivered” mais ton téléphone ne reçoit rien, puis corriger durablement.
 
-# Plan de correction des notifications push OneSignal
+## 1) Analyse complète (ce qui est très probablement cassé)
 
-## Diagnostic
+### A. Conflit de Service Worker (cause n°1 dans ton contexte)
+Tu utilises :
+- Une PWA (vite-plugin-pwa) qui enregistre automatiquement un Service Worker à la racine (scope “/”).
+- OneSignal qui a aussi besoin d’un Service Worker à la racine (par défaut `/OneSignalSDKWorker.js`).
 
-L'analyse des logs révèle plusieurs problèmes :
+Sur le Web, **un seul Service Worker peut gérer le scope “/”**.  
+Résultat typique :
+- Le SW de la PWA prend le contrôle.
+- OneSignal pense avoir “envoyé/delivered” (côté serveur), mais **le push n’est pas affiché côté device** car le SW actif ne gère pas correctement l’événement `push` (ou n’importe pas OneSignal).
+- Ça colle parfaitement avec “je reçois juste une notif après abonnement” (souvent un feedback local/permission) puis plus rien ensuite.
 
-1. **Player IDs invalides dans la base de données** - Des anciens IDs qui ne sont plus reconnus par OneSignal
-2. **Entrées multiples par utilisateur** - Un même utilisateur peut avoir plusieurs `player_id` (un seul est valide)
-3. **Synchronisation défaillante** - Quand un utilisateur se réabonne, l'ancien ID n'est pas supprimé
+=> Tant qu’on n’a pas un Service Worker unique (ou correctement “fusionné”), les campagnes et les notifications trigger (chat/retraits) peuvent être “delivered” sans apparaître.
 
-## Solution proposée
+### B. Domaines/Origines (déjà vu dans tes logs)
+Tes logs montraient : “Can only be used on: https://luminagames.netlify.app”.  
+Tu testes maintenant sur Netlify, donc ça devrait être OK, mais on va quand même ajouter une détection/affichage d’erreur claire dans l’UI si ça se reproduit sur une autre URL (preview / lovable domain).
 
-### 1. Nettoyer la table des subscriptions
+### C. Données d’abonnement (déjà amélioré)
+On a déjà :
+- Nettoyé les doublons en base + contrainte unique `user_id`.
+- Changé `saveSubscription` pour supprimer les anciennes lignes.
 
-Modifier la logique de sauvegarde pour :
-- Supprimer les anciens `player_id` d'un utilisateur avant d'en ajouter un nouveau
-- Garantir qu'un utilisateur n'a qu'une seule subscription active
+Ça réduit les “invalid_player_ids”, mais **ça ne règle pas le problème de réception** si le Service Worker actif n’est pas celui attendu.
 
-### 2. Améliorer le hook useOneSignal
+## 2) Changements à implémenter (solution)
 
-```text
-┌─────────────────────────────────────────────────────────┐
-│                    saveSubscription()                    │
-├─────────────────────────────────────────────────────────┤
-│ 1. Supprimer toutes les anciennes subscriptions         │
-│    de cet user_id                                       │
-│                                                         │
-│ 2. Insérer le nouveau player_id                         │
-│                                                         │
-│ 3. Supprimer aussi ce player_id s'il était associé      │
-│    à un autre utilisateur                               │
-└─────────────────────────────────────────────────────────┘
+### Étape 1 — Créer un Service Worker unique compatible PWA + OneSignal
+But : faire en sorte que le Service Worker utilisé par la PWA **importe aussi OneSignal**.
+
+Approche recommandée :
+- Passer `vite-plugin-pwa` en mode `injectManifest` (au lieu du SW auto généré opaque).
+- Ajouter un fichier SW source (ex: `src/sw.ts`) qui :
+  1) inclut le precache Workbox (`precacheAndRoute(self.__WB_MANIFEST)`),
+  2) et **importe OneSignal** via :
+     `importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");`
+
+Résultat : un seul SW à la racine, qui gère à la fois :
+- cache/offline PWA
+- réception et affichage des push OneSignal
+
+Fichiers à modifier/ajouter (côté code) :
+- `vite.config.ts` : configurer VitePWA en `strategies: 'injectManifest'`, pointer vers le SW source.
+- Nouveau fichier SW (ex: `src/sw.ts` ou `src/service-worker/sw.ts`) : Workbox + importScripts OneSignal.
+
+Points d’attention :
+- Le SW doit rester au scope “/”.
+- Garder `clientsClaim/skipWaiting` si on veut forcer les updates.
+- Vérifier que le build génère bien `/sw.js` (ou le nom choisi).
+
+### Étape 2 — Aligner `useOneSignal` sur le bon Service Worker
+Actuellement :
+```ts
+serviceWorkerPath: '/OneSignalSDKWorker.js'
 ```
+Après la fusion, OneSignal doit s’appuyer sur le SW racine unique (celui de la PWA). On mettra :
+- soit `serviceWorkerPath: '/sw.js'` (si c’est le fichier final),
+- soit on retire la config si OneSignal détecte correctement, mais je préfère être explicite.
 
-### 3. Nettoyer les données existantes
+On ajoutera aussi :
+- un état `initError` dans le hook (message lisible),
+- et un log diagnostic des SW enregistrés :
+  - `navigator.serviceWorker.getRegistrations()`
+  - afficher le scriptURL + scope dans la console (et éventuellement dans l’écran Profil en mode debug).
 
-Exécuter une requête pour supprimer les doublons et ne garder que le `player_id` le plus récent par utilisateur.
+### Étape 3 — Ajouter un panneau “Diagnostic Notifications” (pour arrêter de “deviner”)
+Sur la page Profil (là où tu gères les notifs), ajouter un bloc (visible pour “michel” ou pour tous en mode debug) qui affiche :
+- Permission navigateur (`Notification.permission`)
+- Mode PWA détecté (`display-mode: standalone`)
+- OneSignal `subscriptionId` (PushSubscription.id)
+- `optedIn`
+- Service worker actif (scriptURL + scope)
+- Bouton “Envoyer une notification test à moi” (optionnel mais très utile)
 
-### 4. Ajouter des logs de debug côté client
+Ce bouton peut appeler une fonction backend simple qui envoie un push uniquement au `player_id` de l’utilisateur courant (pour isoler tout le reste).
 
-Pour mieux diagnostiquer les problèmes de réception sur mobile.
+### Étape 4 — Vérifier le flux “chat social” + “retraits”
+Une fois le push rétabli côté device (SW OK) :
+- Chat social : confirmer que l’appel à `send-push-notification` est bien exécuté et ne retourne pas d’erreur.
+  - On ajoutera un `console.log`/toast côté client si la function répond avec `{error:...}`.
+  - Et on vérifiera les logs backend de la function sur les envois.
+- Retraits : si tu as un système de retraits qui doit notifier, il faut identifier l’endroit exact où l’événement “retrait effectué” est déclenché (front ou backend) et brancher l’envoi push (probablement via une fonction backend pour garder les secrets).
 
-## Fichiers à modifier
+## 3) Comment on saura que c’est corrigé (critères de succès)
+Sur Android, PWA installée, URL Netlify :
+1) Après opt-in :
+   - le panneau diagnostic montre un `subscriptionId` non vide
+   - et le SW actif = `/sw.js` (ou celui configuré), scope “/”
+2) Une campagne OneSignal “Delivered” se voit réellement sur le téléphone.
+3) Un message chat déclenche une notification reçue (pas seulement log “delivered”).
+4) Le bouton broadcast (michel) envoie une notif reçue.
 
-| Fichier | Modification |
-|---------|-------------|
-| `src/hooks/useOneSignal.ts` | Améliorer `saveSubscription()` pour supprimer les anciens IDs |
-| Migration SQL | Nettoyer les doublons existants et ajouter une contrainte unique sur `user_id` |
+## 4) Séquencement concret
+1) Implémenter la fusion Service Worker (PWA + OneSignal).
+2) Mettre à jour `useOneSignal` pour pointer sur le SW final + ajouter `initError` + logs.
+3) Ajouter panneau diagnostic sur Profil.
+4) Tester campagnes + test push direct + chat + broadcast.
+5) Si encore KO : on analyse avec les infos du panneau (SW/permission/id) au lieu de “delivered”.
 
-## Note importante sur les notifications mobiles
+## 5) Risques / pièges connus
+- Si un ancien SW est déjà installé, il peut rester actif : il faudra forcer une mise à jour (`skipWaiting/clientsClaim` + “hard refresh” + parfois désinstaller/réinstaller la PWA).
+- Sur Android, certains modes économie d’énergie/optimisation batterie peuvent retarder l’affichage, mais ça n’explique pas “jamais” sur campagnes.
+- Si tu testes parfois sur preview/lovable domain : OneSignal peut refuser (comme vu dans les logs). On affichera l’erreur clairement.
 
-Les notifications web push ont des limitations :
-- **Android** : Fonctionne sur Chrome si le site est en HTTPS
-- **iOS** : Nécessite iOS 16.4+ ET que le site soit ajouté à l'écran d'accueil en tant que PWA
-
-Si tu testes sur iPhone sans avoir ajouté le site en PWA, les notifications ne fonctionneront pas.
+## Fichiers concernés (prévision)
+- `vite.config.ts` (config PWA injectManifest)
+- Nouveau fichier Service Worker (ex: `src/sw.ts`)
+- `src/hooks/useOneSignal.ts` (serviceWorkerPath + diagnostics + initError)
+- `src/components/profile/NotificationSettings.tsx` (UI diagnostic)
+- Optionnel : une fonction backend “send-test-notification” (si on veut un test ciblé)
 
