@@ -119,21 +119,31 @@ export const useOneSignal = (userId: string | null) => {
     return true;
   }, [userId]);
 
-  // Save subscription to database
   const saveSubscription = async (playerId: string, currentUserId: string) => {
     if (!currentUserId) return;
 
     try {
-      // Upsert the subscription
+     // 1. Supprimer toutes les anciennes subscriptions de cet utilisateur
+     await supabase
+       .from('onesignal_subscriptions')
+       .delete()
+       .eq('user_id', currentUserId);
+
+     // 2. Supprimer ce player_id s'il était associé à un autre utilisateur
+     await supabase
+       .from('onesignal_subscriptions')
+       .delete()
+       .eq('player_id', playerId);
+
+     // 3. Insérer le nouveau player_id
       const { error } = await supabase
         .from('onesignal_subscriptions')
-        .upsert(
-          { user_id: currentUserId, player_id: playerId },
-          { onConflict: 'player_id' }
-        );
+       .insert({ user_id: currentUserId, player_id: playerId });
 
       if (error) {
         console.error('Error saving OneSignal subscription:', error);
+     } else {
+       console.log('OneSignal subscription saved successfully:', { userId: currentUserId, playerId });
       }
     } catch (error) {
       console.error('Error saving subscription:', error);
