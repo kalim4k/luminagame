@@ -97,34 +97,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get all subscriptions
-    const { data: subscriptions, error: subError } = await supabase
-      .from('onesignal_subscriptions')
-      .select('player_id');
-
-    if (subError) {
-      console.error('Error fetching subscriptions:', subError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch subscriptions' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    if (!subscriptions || subscriptions.length === 0) {
-      console.log('No subscriptions to notify');
-      return new Response(
-        JSON.stringify({ success: true, notified: 0, message: 'Aucun abonné à notifier' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const playerIds = subscriptions.map(sub => sub.player_id);
-    console.log(`Sending broadcast notification to ${playerIds.length} subscribers`);
-
     // Générer le message aléatoire
     const notification = generateNotificationMessage();
+    
+    console.log('Sending broadcast notification to all subscribed users');
 
-    // Send notification via OneSignal API
+    // Send notification to ALL subscribed users via OneSignal API
+    // Using "included_segments" with "Subscribed Users" to target everyone
     const notificationResponse = await fetch('https://onesignal.com/api/v1/notifications', {
       method: 'POST',
       headers: {
@@ -133,7 +112,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         app_id: ONESIGNAL_APP_ID,
-        include_player_ids: playerIds,
+        included_segments: ['Subscribed Users'],
         headings: { en: notification.heading, fr: notification.heading },
         contents: { en: notification.content, fr: notification.content },
         url: '/dashboard?tab=wallet',
@@ -153,10 +132,12 @@ Deno.serve(async (req) => {
       );
     }
 
+    const recipientsCount = notificationResult.recipients || 'tous les';
+
     return new Response(
       JSON.stringify({ 
         success: true, 
-        notified: playerIds.length,
+        notified: recipientsCount,
         message: notification.content,
         result: notificationResult 
       }),
