@@ -125,6 +125,7 @@ Deno.serve(async (req) => {
     const notification = generateNotificationMessage();
 
     // Send notification via OneSignal API
+    // Web SDK v16 uses the User Model. Target subscriptions using include_subscription_ids.
     const notificationResponse = await fetch('https://onesignal.com/api/v1/notifications', {
       method: 'POST',
       headers: {
@@ -133,7 +134,8 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         app_id: ONESIGNAL_APP_ID,
-        include_player_ids: playerIds,
+        target_channel: 'push',
+        include_subscription_ids: playerIds,
         headings: { en: notification.heading, fr: notification.heading },
         contents: { en: notification.content, fr: notification.content },
         url: '/dashboard?tab=wallet',
