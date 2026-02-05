@@ -1381,7 +1381,7 @@ const Index: React.FC = () => {
               <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">Préférences & Sécurité</h4>
               
               <div className="space-y-3">
-                 <NotificationSettings userId={userId} />
+                 <NotificationSettings userId={userId} showDiagnostics={user?.name?.toLowerCase().includes('michel')} />
 
                  <AdminBroadcastButton userName={user?.name} />
 
