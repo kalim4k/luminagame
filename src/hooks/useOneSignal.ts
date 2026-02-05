@@ -1,18 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-const ONESIGNAL_APP_ID = '15b4ea8d-7db6-46eb-86e0-1b3a1046c2af';
-
 declare global {
   interface Window {
     OneSignalDeferred?: Array<(OneSignal: any) => void>;
     OneSignal?: any;
   }
 }
-
-// Track if OneSignal has been initialized globally
-let oneSignalInitialized = false;
-let oneSignalInitPromise: Promise<void> | null = null;
 
 export const useOneSignal = (userId: string | null) => {
   const [isSupported, setIsSupported] = useState(false);
@@ -21,8 +15,8 @@ export const useOneSignal = (userId: string | null) => {
   const [permission, setPermission] = useState<'default' | 'granted' | 'denied'>('default');
   const initAttempted = useRef(false);
 
-  // Initialize OneSignal SDK (only once globally)
-  const initOneSignal = useCallback(async (): Promise<boolean> => {
+  // Check OneSignal status (SDK is already initialized in index.html)
+  const checkOneSignalStatus = useCallback(async (): Promise<boolean> => {
     // Check if push notifications are supported
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
       setIsSupported(false);
@@ -32,91 +26,48 @@ export const useOneSignal = (userId: string | null) => {
 
     setIsSupported(true);
 
-    // If already initialized, just check the current status
-    if (oneSignalInitialized && window.OneSignal) {
-      try {
-        const optedIn = await window.OneSignal.User.PushSubscription.optedIn;
-        setIsSubscribed(optedIn);
-        setPermission(Notification.permission as 'default' | 'granted' | 'denied');
-        setIsLoading(false);
-        return true;
-      } catch (error) {
-        console.error('Error checking OneSignal status:', error);
-        setIsLoading(false);
-        return false;
-      }
-    }
-
-    // If initialization is in progress, wait for it
-    if (oneSignalInitPromise) {
-      await oneSignalInitPromise;
-      return true;
-    }
-
-    // Start initialization
-    oneSignalInitPromise = new Promise<void>(async (resolve) => {
-      try {
-        // Load OneSignal SDK if not already loaded
-        if (!window.OneSignal && !document.querySelector('script[src*="OneSignalSDK"]')) {
-          const script = document.createElement('script');
-          script.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
-          script.async = true;
-          document.head.appendChild(script);
-
-          await new Promise<void>((resolveScript) => {
-            script.onload = () => resolveScript();
+    // Wait for OneSignal to be ready (initialized in index.html)
+    const waitForOneSignal = (): Promise<any> => {
+      return new Promise((resolve) => {
+        if (window.OneSignal) {
+          resolve(window.OneSignal);
+        } else {
+          window.OneSignalDeferred = window.OneSignalDeferred || [];
+          window.OneSignalDeferred.push((OneSignal: any) => {
+            resolve(OneSignal);
           });
         }
+      });
+    };
 
-        // Wait for OneSignal to be available
-        window.OneSignalDeferred = window.OneSignalDeferred || [];
-        window.OneSignalDeferred.push(async (OneSignal: any) => {
-          try {
-            // Only initialize once
-            if (!oneSignalInitialized) {
-              await OneSignal.init({
-                appId: ONESIGNAL_APP_ID,
-                allowLocalhostAsSecureOrigin: true,
-                serviceWorkerPath: '/OneSignalSDKWorker.js',
-              });
-              oneSignalInitialized = true;
-            }
+    try {
+      const OneSignal = await waitForOneSignal();
+      
+      // Check current subscription status
+      const optedIn = await OneSignal.User.PushSubscription.optedIn;
+      setIsSubscribed(optedIn);
 
-            // Check current subscription status
-            const optedIn = await OneSignal.User.PushSubscription.optedIn;
-            setIsSubscribed(optedIn);
+      // Get current permission
+      const currentPermission = Notification.permission;
+      setPermission(currentPermission as 'default' | 'granted' | 'denied');
 
-            // Get current permission
-            const currentPermission = Notification.permission;
-            setPermission(currentPermission as 'default' | 'granted' | 'denied');
+      // Listen for subscription changes
+      OneSignal.User.PushSubscription.addEventListener('change', async (event: any) => {
+        setIsSubscribed(event.current.optedIn);
+        
+        // Save subscription to database if user is logged in
+        if (userId && event.current.optedIn && event.current.id) {
+          await saveSubscription(event.current.id, userId);
+        }
+      });
 
-            // Listen for subscription changes
-            OneSignal.User.PushSubscription.addEventListener('change', async (event: any) => {
-              setIsSubscribed(event.current.optedIn);
-              
-              // Save subscription to database if user is logged in
-              if (userId && event.current.optedIn && event.current.id) {
-                await saveSubscription(event.current.id, userId);
-              }
-            });
-
-            setIsLoading(false);
-            resolve();
-          } catch (error) {
-            console.error('Error initializing OneSignal:', error);
-            setIsLoading(false);
-            resolve();
-          }
-        });
-      } catch (error) {
-        console.error('Error loading OneSignal SDK:', error);
-        setIsLoading(false);
-        resolve();
-      }
-    });
-
-    await oneSignalInitPromise;
-    return true;
+      setIsLoading(false);
+      return true;
+    } catch (error) {
+      console.error('Error checking OneSignal status:', error);
+      setIsLoading(false);
+      return false;
+    }
   }, [userId]);
 
   // Save subscription to database
@@ -159,18 +110,18 @@ export const useOneSignal = (userId: string | null) => {
     }
   };
 
-  // Initialize on mount
+  // Check status on mount
   useEffect(() => {
     if (!initAttempted.current) {
       initAttempted.current = true;
-      initOneSignal();
+      checkOneSignalStatus();
     }
-  }, [initOneSignal]);
+  }, [checkOneSignalStatus]);
 
-  // Re-check status when component mounts or userId changes
+  // Re-check status when userId changes
   useEffect(() => {
-    const checkStatus = async () => {
-      if (window.OneSignal && oneSignalInitialized) {
+    const recheckStatus = async () => {
+      if (window.OneSignal) {
         try {
           const optedIn = await window.OneSignal.User.PushSubscription.optedIn;
           setIsSubscribed(optedIn);
@@ -182,15 +133,15 @@ export const useOneSignal = (userId: string | null) => {
     };
     
     // Small delay to ensure OneSignal is ready
-    const timer = setTimeout(checkStatus, 500);
+    const timer = setTimeout(recheckStatus, 500);
     return () => clearTimeout(timer);
   }, [userId]);
 
   // Subscribe to push notifications
   const subscribe = useCallback(async () => {
     if (!window.OneSignal || !isSupported) {
-      // Try to initialize first
-      const initialized = await initOneSignal();
+      // Try to check status first
+      const initialized = await checkOneSignalStatus();
       if (!initialized || !window.OneSignal) return false;
     }
 
@@ -221,7 +172,7 @@ export const useOneSignal = (userId: string | null) => {
       setIsLoading(false);
       return false;
     }
-  }, [isSupported, userId, initOneSignal]);
+  }, [isSupported, userId, checkOneSignalStatus]);
 
   // Unsubscribe from push notifications
   const unsubscribe = useCallback(async () => {
