@@ -14,6 +14,36 @@ declare global {
 let oneSignalInitialized = false;
 let oneSignalInitPromise: Promise<void> | null = null;
 
+// Save subscription to database (outside hook to avoid dependency issues)
+const saveSubscriptionToDb = async (playerId: string, userId: string): Promise<boolean> => {
+  if (!userId || !playerId) {
+    console.log('[OneSignal] Cannot save: missing userId or playerId');
+    return false;
+  }
+
+  try {
+    console.log('[OneSignal] Saving subscription:', { playerId, userId });
+    
+    const { error } = await supabase
+      .from('onesignal_subscriptions')
+      .upsert(
+        { user_id: userId, player_id: playerId },
+        { onConflict: 'player_id' }
+      );
+
+    if (error) {
+      console.error('[OneSignal] Error saving subscription:', error);
+      return false;
+    }
+    
+    console.log('[OneSignal] Subscription saved successfully');
+    return true;
+  } catch (error) {
+    console.error('[OneSignal] Error saving subscription:', error);
+    return false;
+  }
+};
+
 export const useOneSignal = (userId: string | null) => {
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -21,36 +51,12 @@ export const useOneSignal = (userId: string | null) => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [permission, setPermission] = useState<'default' | 'granted' | 'denied'>('default');
   const initAttempted = useRef(false);
+  const userIdRef = useRef(userId);
 
-  // Save subscription to database
-  const saveSubscription = useCallback(async (playerId: string, currentUserId: string): Promise<boolean> => {
-    if (!currentUserId || !playerId) {
-      console.log('[OneSignal] Cannot save: missing userId or playerId');
-      return false;
-    }
-
-    try {
-      console.log('[OneSignal] Saving subscription:', { playerId, userId: currentUserId });
-      
-      const { error } = await supabase
-        .from('onesignal_subscriptions')
-        .upsert(
-          { user_id: currentUserId, player_id: playerId },
-          { onConflict: 'player_id' }
-        );
-
-      if (error) {
-        console.error('[OneSignal] Error saving subscription:', error);
-        return false;
-      }
-      
-      console.log('[OneSignal] Subscription saved successfully');
-      return true;
-    } catch (error) {
-      console.error('[OneSignal] Error saving subscription:', error);
-      return false;
-    }
-  }, []);
+  // Keep ref updated
+  useEffect(() => {
+    userIdRef.current = userId;
+  }, [userId]);
 
   // Sync existing subscription to database (for resync button)
   const syncSubscription = useCallback(async (): Promise<boolean> => {
@@ -69,7 +75,7 @@ export const useOneSignal = (userId: string | null) => {
       console.log('[OneSignal] Current state:', { optedIn, subscriptionId });
       
       if (optedIn && subscriptionId) {
-        const success = await saveSubscription(subscriptionId, userId);
+        const success = await saveSubscriptionToDb(subscriptionId, userId);
         setIsSyncing(false);
         return success;
       } else {
@@ -82,10 +88,10 @@ export const useOneSignal = (userId: string | null) => {
       setIsSyncing(false);
       return false;
     }
-  }, [userId, saveSubscription]);
+  }, [userId]);
 
   // Initialize OneSignal SDK (only once globally)
-  const initOneSignal = useCallback(async (currentUserId: string | null): Promise<boolean> => {
+  const initOneSignal = useCallback(async (): Promise<boolean> => {
     // Check if push notifications are supported
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
       console.log('[OneSignal] Push notifications not supported');
@@ -108,9 +114,9 @@ export const useOneSignal = (userId: string | null) => {
         setPermission(Notification.permission as 'default' | 'granted' | 'denied');
         
         // Proactive sync: if user is subscribed, ensure DB is up to date
-        if (optedIn && subscriptionId && currentUserId) {
+        if (optedIn && subscriptionId && userIdRef.current) {
           console.log('[OneSignal] Proactive sync on init...');
-          await saveSubscription(subscriptionId, currentUserId);
+          await saveSubscriptionToDb(subscriptionId, userIdRef.current);
         }
         
         setIsLoading(false);
@@ -173,9 +179,9 @@ export const useOneSignal = (userId: string | null) => {
             setPermission(currentPermission as 'default' | 'granted' | 'denied');
 
             // Proactive sync: save to DB if already subscribed
-            if (optedIn && subscriptionId && currentUserId) {
+            if (optedIn && subscriptionId && userIdRef.current) {
               console.log('[OneSignal] Proactive sync after init...');
-              await saveSubscription(subscriptionId, currentUserId);
+              await saveSubscriptionToDb(subscriptionId, userIdRef.current);
             }
 
             // Listen for subscription changes
@@ -183,9 +189,9 @@ export const useOneSignal = (userId: string | null) => {
               console.log('[OneSignal] Subscription changed:', event.current);
               setIsSubscribed(event.current.optedIn);
               
-              // Save subscription to database if user is logged in - use closure variable
-              if (currentUserId && event.current.optedIn && event.current.id) {
-                await saveSubscription(event.current.id, currentUserId);
+              // Save subscription to database if user is logged in - use ref for latest value
+              if (userIdRef.current && event.current.optedIn && event.current.id) {
+                await saveSubscriptionToDb(event.current.id, userIdRef.current);
               }
             });
 
@@ -206,15 +212,15 @@ export const useOneSignal = (userId: string | null) => {
 
     await oneSignalInitPromise;
     return true;
-  }, [saveSubscription]);
+  }, []);
 
   // Initialize on mount
   useEffect(() => {
     if (!initAttempted.current) {
       initAttempted.current = true;
-      initOneSignal(userId);
+      initOneSignal();
     }
-  }, [initOneSignal, userId]);
+  }, [initOneSignal]);
 
   // Re-check and sync status when userId changes
   useEffect(() => {
@@ -232,7 +238,7 @@ export const useOneSignal = (userId: string | null) => {
           // Sync to DB when userId becomes available
           if (optedIn && subscriptionId && userId) {
             console.log('[OneSignal] Syncing on userId change...');
-            await saveSubscription(subscriptionId, userId);
+            await saveSubscriptionToDb(subscriptionId, userId);
           }
         } catch (error) {
           console.error('Error checking subscription status:', error);
@@ -243,13 +249,13 @@ export const useOneSignal = (userId: string | null) => {
     // Small delay to ensure OneSignal is ready
     const timer = setTimeout(checkStatus, 500);
     return () => clearTimeout(timer);
-  }, [userId, saveSubscription]);
+  }, [userId]);
 
   // Subscribe to push notifications
   const subscribe = useCallback(async () => {
     if (!window.OneSignal || !isSupported) {
       // Try to initialize first
-      const initialized = await initOneSignal(userId);
+      const initialized = await initOneSignal();
       if (!initialized || !window.OneSignal) return false;
     }
 
@@ -266,7 +272,7 @@ export const useOneSignal = (userId: string | null) => {
       console.log('[OneSignal] Subscribe result:', { optedIn, subscriptionId });
 
       if (optedIn && subscriptionId && userId) {
-        await saveSubscription(subscriptionId, userId);
+        await saveSubscriptionToDb(subscriptionId, userId);
       }
 
       setIsSubscribed(optedIn);
@@ -279,7 +285,7 @@ export const useOneSignal = (userId: string | null) => {
       setIsLoading(false);
       return false;
     }
-  }, [isSupported, userId, initOneSignal, saveSubscription]);
+  }, [isSupported, userId, initOneSignal]);
 
   // Unsubscribe from push notifications
   const unsubscribe = useCallback(async () => {
