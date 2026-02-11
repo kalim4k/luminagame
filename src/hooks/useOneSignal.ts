@@ -48,53 +48,33 @@ export const useOneSignal = (userId: string | null) => {
 
     setIsSupported(true);
 
-    // Load OneSignal SDK if not already loaded
-    if (!window.OneSignal && !document.querySelector('script[src*="OneSignalSDK"]')) {
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      
-      const script = document.createElement('script');
-      script.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
-      script.defer = true;
-      document.head.appendChild(script);
-
-      window.OneSignalDeferred.push(async (OneSignal: any) => {
-        try {
-          await OneSignal.init({
-            appId: ONESIGNAL_APP_ID,
-            allowLocalhostAsSecureOrigin: true,
-            serviceWorkerParam: { scope: '/' },
-          });
-
-          // Listen for subscription changes
+    // SDK is initialized in index.html, just wait for it and check status
+    const waitAndCheck = () => {
+      if (window.OneSignal) {
+        // Listen for subscription changes
+        window.OneSignal.User.PushSubscription.addEventListener('change', (event: any) => {
+          const isNowSubscribed = !!event.current.optedIn && !!event.current.id;
+          setIsSubscribed(isNowSubscribed);
+          if (isNowSubscribed && userId && event.current.id) {
+            saveSubscription(userId, event.current.id);
+          }
+        });
+        checkStatus();
+      } else {
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        window.OneSignalDeferred.push(async (OneSignal: any) => {
           OneSignal.User.PushSubscription.addEventListener('change', (event: any) => {
             const isNowSubscribed = !!event.current.optedIn && !!event.current.id;
             setIsSubscribed(isNowSubscribed);
-
             if (isNowSubscribed && userId && event.current.id) {
               saveSubscription(userId, event.current.id);
             }
           });
-
           await checkStatus();
-        } catch (err) {
-          console.error('OneSignal init error:', err);
-          setIsLoading(false);
-        }
-      });
-    } else {
-      // SDK already loaded, just check status
-      const waitForReady = () => {
-        if (window.OneSignal) {
-          checkStatus();
-        } else {
-          window.OneSignalDeferred = window.OneSignalDeferred || [];
-          window.OneSignalDeferred.push(async () => {
-            await checkStatus();
-          });
-        }
-      };
-      waitForReady();
-    }
+        });
+      }
+    };
+    waitAndCheck();
   }, [checkStatus]);
 
   // Save subscription to database
