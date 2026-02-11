@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-const ONESIGNAL_APP_ID = '15b4ea8d-7db6-46eb-86e0-1b3a1046c2af';
+const ONESIGNAL_APP_ID = 'b6ec05f3-8d01-45e0-9697-8529fd355531';
 
 declare global {
   interface Window {
