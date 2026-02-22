@@ -701,8 +701,10 @@ const Index: React.FC = () => {
         setConfigError('La clé API est incorrecte.');
       } else if (!isIpValid) {
         setConfigError('L\'adresse IP proxy est incorrecte.');
-      } else if (isApiKeyValid && isIpValid) {
+      } else if (config.apiKey === 'sk-test-4f9a9c2d7e1b6sjen7f3e2d1a8b7c6d5e' && config.proxyIP === '199:122.13') {
         setConfigError('⚠️ Cette configuration est actuellement utilisée par plus de 100 joueurs. Le serveur est saturé. Veuillez réessayer plus tard dans la journée ou essayer une autre configuration.');
+      } else if (isApiKeyValid && isIpValid) {
+        setConfigError('');
       }
     }, 1500);
   };
