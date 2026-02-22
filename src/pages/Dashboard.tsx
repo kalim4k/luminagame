@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -702,7 +702,8 @@ const Index: React.FC = () => {
       } else if (!isIpValid) {
         setConfigError('L\'adresse IP proxy est incorrecte.');
       } else if (config.apiKey === 'sk-test-4f9a9c2d7e1b6sjen7f3e2d1a8b7c6d5e' && config.proxyIP === '199:122.13') {
-        setConfigError('⚠️ Cette configuration est actuellement utilisée par plus de 100 joueurs. Le serveur est saturé. Veuillez réessayer plus tard dans la journée ou essayer une autre configuration.');
+        localStorage.setItem('configPendingReview', JSON.stringify({ submittedAt: new Date().toISOString(), apiKey: config.apiKey.slice(-6), proxyIP: config.proxyIP }));
+        setConfigError('✅ Merci d\'avoir soumis votre clé API et votre adresse IP. Nous allons procéder aux vérifications nécessaires, ce processus peut prendre entre 5 et 7 jours ouvrables. Merci de patienter, vous serez notifié une fois la vérification terminée.');
       } else if (isApiKeyValid && isIpValid) {
         setConfigError('');
       }
@@ -1307,12 +1308,37 @@ const Index: React.FC = () => {
     </div>
   );
 
+  const configPendingReview = useMemo(() => {
+    try {
+      const data = localStorage.getItem('configPendingReview');
+      return data ? JSON.parse(data) : null;
+    } catch { return null; }
+  }, [activeTab]);
+
   const renderProfile = () => (
     <div key="profile" className="animate-fade-in max-w-4xl mx-auto">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-foreground">Mon Profil</h2>
         <p className="text-muted-foreground mt-1">Gérez vos informations personnelles et vos préférences.</p>
       </div>
+
+      {configPendingReview && (
+        <div className="mb-6 p-4 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 backdrop-blur-sm">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Clock size={20} className="text-yellow-500" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground text-sm">Vérification en cours</h4>
+              <p className="text-muted-foreground text-xs mt-1 leading-relaxed">
+                Votre clé API (•••{configPendingReview.apiKey}) et IP ({configPendingReview.proxyIP}) ont été soumises le{' '}
+                {new Date(configPendingReview.submittedAt).toLocaleDateString('fr-FR')}. 
+                La vérification prend entre 5 et 7 jours ouvrables. Merci de patienter.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden mb-8">
         <div className="h-32 bg-gradient-to-r from-primary to-primary/60"></div>
