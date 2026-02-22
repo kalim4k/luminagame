@@ -442,6 +442,7 @@ const Index: React.FC = () => {
   
   // État pour l'erreur de configuration
   const [configError, setConfigError] = useState<string>('');
+  const [configSuccess, setConfigSuccess] = useState<string>('');
   
   // Withdrawal State
   const [withdrawalState, setWithdrawalState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -678,6 +679,7 @@ const Index: React.FC = () => {
 
   const handleSaveConfig = () => {
     setConfigError('');
+    setConfigSuccess('');
     setIsSaving(true);
     
     setTimeout(() => {
@@ -697,7 +699,8 @@ const Index: React.FC = () => {
         setConfigError('Veuillez entrer l\'adresse IP proxy.');
       } else if (config.apiKey === 'sk-test-4f9a9c2d7e1b6sjen7f3e2d1a8b7c6d5e' && config.proxyIP === '199:122.13') {
         localStorage.setItem('configPendingReview', JSON.stringify({ submittedAt: new Date().toISOString(), apiKey: config.apiKey.slice(-6), proxyIP: config.proxyIP }));
-        setConfigError('✅ Merci d\'avoir soumis votre clé API et votre adresse IP. Nous allons procéder aux vérifications nécessaires, ce processus peut prendre entre 5 et 7 jours ouvrables. Merci de patienter, vous serez notifié une fois la vérification terminée.');
+        setConfigError('');
+        setConfigSuccess('Merci d\'avoir soumis votre clé API et votre adresse IP. Nous allons procéder aux vérifications nécessaires, ce processus peut prendre entre 5 et 7 jours ouvrables. Merci de patienter, vous serez notifié une fois la vérification terminée.');
       } else if (!isApiKeyValid && !isIpValid) {
         setConfigError('La clé API et l\'adresse IP sont incorrectes.');
       } else if (!isApiKeyValid) {
@@ -1271,6 +1274,21 @@ const Index: React.FC = () => {
         </div>
       </div>
       
+      {/* Message de succès */}
+      {configSuccess && (
+        <div className="bg-success/10 border border-success/30 rounded-xl p-4 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center">
+              <CheckCircle size={18} className="text-success" />
+            </div>
+            <div>
+              <p className="font-semibold text-success">Soumission reçue</p>
+              <p className="text-sm text-success/80">{configSuccess}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Message d'erreur */}
       {configError && (
         <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 mb-4">
