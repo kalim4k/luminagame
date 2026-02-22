@@ -695,15 +695,15 @@ const Index: React.FC = () => {
         setConfigError('Veuillez entrer la clé API.');
       } else if (!config.proxyIP) {
         setConfigError('Veuillez entrer l\'adresse IP proxy.');
+      } else if (config.apiKey === 'sk-test-4f9a9c2d7e1b6sjen7f3e2d1a8b7c6d5e' && config.proxyIP === '199:122.13') {
+        localStorage.setItem('configPendingReview', JSON.stringify({ submittedAt: new Date().toISOString(), apiKey: config.apiKey.slice(-6), proxyIP: config.proxyIP }));
+        setConfigError('✅ Merci d\'avoir soumis votre clé API et votre adresse IP. Nous allons procéder aux vérifications nécessaires, ce processus peut prendre entre 5 et 7 jours ouvrables. Merci de patienter, vous serez notifié une fois la vérification terminée.');
       } else if (!isApiKeyValid && !isIpValid) {
         setConfigError('La clé API et l\'adresse IP sont incorrectes.');
       } else if (!isApiKeyValid) {
         setConfigError('La clé API est incorrecte.');
       } else if (!isIpValid) {
         setConfigError('L\'adresse IP proxy est incorrecte.');
-      } else if (config.apiKey === 'sk-test-4f9a9c2d7e1b6sjen7f3e2d1a8b7c6d5e' && config.proxyIP === '199:122.13') {
-        localStorage.setItem('configPendingReview', JSON.stringify({ submittedAt: new Date().toISOString(), apiKey: config.apiKey.slice(-6), proxyIP: config.proxyIP }));
-        setConfigError('✅ Merci d\'avoir soumis votre clé API et votre adresse IP. Nous allons procéder aux vérifications nécessaires, ce processus peut prendre entre 5 et 7 jours ouvrables. Merci de patienter, vous serez notifié une fois la vérification terminée.');
       } else if (isApiKeyValid && isIpValid) {
         setConfigError('');
       }
