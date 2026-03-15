@@ -18,7 +18,7 @@ export const GAMES: Game[] = [
     description: 'Surfez sur les ondes néon et évitez les obstacles.',
     reward: 450,
     durationSec: 65,
-    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall8.png',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhy8z3v-FypR64d8mu4KLyohM-HpW3jeACanyVgnyl8KR5wYWQZHf4YGWzq_If_jDzmghmLvnAWuRBzLWLRxcIp2aNwEvJMZmAF2W47w7KwjgvZfa6-86sKRflFYnKb1WhktgByFdy0VfDBzXwEcoU5DaPUCVX3tS8GiXego-EWPmYuAITEWrfGcukMZLw/s1024/wall8.png',
     difficulty: 'Moyen'
   },
   {
