@@ -38,7 +38,7 @@ export const GAMES: Game[] = [
     description: 'Entrez dans la légende et combattez des créatures mythiques.',
     reward: 1200,
     durationSec: 100,
-    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall6.png',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjJppGzL8-Zt9k0SNu4k-DRYUEMXFLsIdxOAtrHLz06XEzal2aqKcEJPuRSCGFsp6HUNhlafqzwsvewpXWF_SPTdVDb8kNOMlh2IcRabaLm9tPSAIcBxvnBrGWEC0xkKFuR-efNZ-oz3A0gPPnPtRqevWHSQoRF4CWNVCyhbY0TxUbQpTrbOcF5WteUYgU/s1024/wall6.png',
     difficulty: 'Difficile'
   },
   {
