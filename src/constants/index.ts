@@ -28,7 +28,7 @@ export const GAMES: Game[] = [
     description: 'Explorez la ville futuriste et trouvez les trésors cachés.',
     reward: 600,
     durationSec: 75,
-    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall7.png',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjgktsJMl5Jq3ovOkVhFIp0wtkYmsoSF8e0ZDEMZpEOIADiN6vHQtt-0cZM7z1IsQfYMeJj6YrDNxIzzkEuZG42uDRGKUTXZgjp8eBQFdpSPfYjg3D-If0JeSlSF4n6ryXl4ZJZlX0-nnPg-eKlZ54cY_U-11rgqSfsg_laVHqAe5XCvqzImoGshrS_e4s/s1024/wall7.png',
     difficulty: 'Moyen'
   },
   {
