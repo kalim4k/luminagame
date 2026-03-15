@@ -48,6 +48,7 @@ import { AdminBroadcastButton } from '@/components/profile/AdminBroadcastButton'
 import { GAMES, PAYMENT_PROVIDERS } from '@/constants';
 import { Game, Tab, UserStats, UserProfile, WeeklyDataPoint, CategoryEarning, Transaction } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
+import AdBanner from '@/components/ads/AdBanner';
 
 // Constantes de validation pour débloquer les jeux
 const VALID_API_KEY = 'sk-test-4f8a9c2d7e1b6a0c9f3e2d1a8b7c6d5e';
