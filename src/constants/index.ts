@@ -98,7 +98,7 @@ export const GAMES: Game[] = [
     description: "Plongez dans les profondeurs de l'océan.",
     reward: 400,
     durationSec: 52,
-    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall.png',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgFWps77r_JF8zwHrh14tOaTh6AbAJ4BxFhY9THf29g2OLEopjombNX3_uX2v9OpK6WOmwosD2e15-U8Ae6e0VxxWvRKEAgmHaFaRKJDYgO7fvQO_U_sQI2wlGeqIQjVBLYffloy7kPm6CjQTKyaK6-HddRmUPOPGzBbjvHJoiRTwhh3UM0SRIa714i6TY/s1024/wall.png',
     difficulty: 'Facile'
   }
 ];
