@@ -1567,6 +1567,8 @@ const Index: React.FC = () => {
         {/* Main Content Area */}
         <main className="flex-1 p-4 md:p-8 lg:p-12 max-w-full overflow-hidden bg-background">
 
+          <AdBanner />
+
           {activeTab === Tab.DASHBOARD && renderDashboard()}
           {activeTab === Tab.GAMES && renderGames()}
           {activeTab === Tab.SOCIAL && (
