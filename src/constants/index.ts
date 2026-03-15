@@ -68,7 +68,7 @@ export const GAMES: Game[] = [
     description: "La course de rue la plus intense de l'année.",
     reward: 800,
     durationSec: 85,
-    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall3.png',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhIMrN5ujWxdjuymi2pHMIhimED4KTDeYvUG_dNxx_v02ALY5c7Mglk8B522pdvxIMpePaxgRnZU6fUXQ7Po9ZmVCuY3vYIbskLzrQYCfJnTLpyQYL4ePSNk6-GNdTbsQKyFWtaqAQtsxIt3QCStgrYSWPK9hXkCwFSn7Q2zk1nj2CB6JvlLHKalDiF1i0/s1024/wall3.png',
     difficulty: 'Moyen'
   },
   {
