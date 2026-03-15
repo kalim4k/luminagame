@@ -48,7 +48,7 @@ export const GAMES: Game[] = [
     description: 'Voyagez à travers les galaxies inconnues.',
     reward: 350,
     durationSec: 50,
-    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall5.png',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEggcc3PitPkPKTRuyw67IEMLNv0v3cSbXqA2MaqHEbE82ZjWsxKiz1h92Pp3hTNUmV12DDGYySaOOS4DAui5E4h9hmp9ajelc3afswj9fGymXdt8jSM_v1ek4oXjyorOgd5CxQZtQjjF5AHFJRDdyFwyFGf3eiR7o8Awl7I08aQOJ7Fww5eaGohGlJtSCs/s1024/wall5.png',
     difficulty: 'Facile'
   },
   {
