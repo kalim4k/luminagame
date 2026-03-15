@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, Shield, Zap, Trophy, Smartphone, Clock } from 'lucide-react';
 import { GAMES } from '@/constants';
+import AdBanner from '@/components/ads/AdBanner';
 
 const Landing: React.FC = () => {
   const featuredGames = GAMES.slice(0, 6);
