@@ -78,7 +78,7 @@ export const GAMES: Game[] = [
     description: 'Atteignez les sommets sans tomber.',
     reward: 300,
     durationSec: 55,
-    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall2.png',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiME48oDtwBHE4M7R20LrOxBaW7CtNgLw9QGHQ_HgJ6mT7verWWLNo98pX0M4H2OMLsUBFi1eylDq-GYDVyjbi-N0zoPenx_GY16oQUMDwhB3qx_AerUwLVvn7gmHbDUhf6Fu_FOYCSWVKfPP4SvvCHArxweGoB7uRyJX8zj_gn518OGdVibANGnufLZ4w/s1024/wall2.png',
     difficulty: 'Facile'
   },
   {
