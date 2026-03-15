@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, Shield, Zap, Trophy, Smartphone, Clock } from 'lucide-react';
 import { GAMES } from '@/constants';
+import AdBanner from '@/components/ads/AdBanner';
 
 const Landing: React.FC = () => {
   const featuredGames = GAMES.slice(0, 6);
@@ -114,6 +115,8 @@ const Landing: React.FC = () => {
         </div>
       </section>
 
+      <AdBanner />
+
       {/* Stats */}
       <section className="px-6 py-16">
         <div className="max-w-4xl mx-auto">
@@ -200,6 +203,8 @@ const Landing: React.FC = () => {
           </div>
         </div>
       </section>
+
+      <AdBanner />
 
       {/* How it works */}
       <section className="px-6 py-20 bg-muted/30">
