@@ -8,7 +8,7 @@ export const GAMES: Game[] = [
     description: 'Le défi ultime pour les champions. Prouvez votre valeur.',
     reward: 2500,
     durationSec: 115,
-    image: 'https://celinaroom.com/wp-content/uploads/2026/01/WhatsApp-Image-2026-01-15-at-9.32.16-PM.jpeg',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_MKQcEOlGRKw1zqx34AZvtYaVJpl_GHIPdSD9TSrwcIZYKzPXnPC_4B0mKi0kCuDqJhmXrX2-uK2nVoCHNnpDI7xv2ifjWwhaGlsxr1UVAEHQH0SJF92U11VtV4WRTYMl96vcnb5qzgYDMfEzvybRhX2Ohpzlo_BNy_EGEvDog_5mddd0kGvXWuJk6VI/s1280/WhatsApp%20Image%202026-01-15%20at%209.32.16%20PM.jpeg',
     difficulty: 'Difficile'
   },
   {
