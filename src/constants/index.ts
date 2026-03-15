@@ -88,7 +88,7 @@ export const GAMES: Game[] = [
     description: 'Survivez à la tempête dans le désert aride.',
     reward: 900,
     durationSec: 95,
-    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall1.png',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiA3Ydziqt0NeVlTwwQCfP1H2kZO2tp4b8NQ58oT-JPXLq3yZfv4sYOx5h0hXswgY53V0_H5-k8Cl5YjfbRw7r7DW4rSsgq0WuQGZBdxh1w2pxXngAAMzjbfX5Jd6cu20W5lvkDDe-ShfSU5E30SW2QGrdqV3rhhFBZZoPAbstw_inrgOBCExliiPEdIAk/s1024/wall1.png',
     difficulty: 'Difficile'
   },
   {
