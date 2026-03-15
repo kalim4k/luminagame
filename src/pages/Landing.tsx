@@ -115,6 +115,8 @@ const Landing: React.FC = () => {
         </div>
       </section>
 
+      <AdBanner />
+
       {/* Stats */}
       <section className="px-6 py-16">
         <div className="max-w-4xl mx-auto">
