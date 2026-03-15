@@ -58,7 +58,7 @@ export const GAMES: Game[] = [
     description: 'Résolvez les énigmes de la forêt enchantée.',
     reward: 500,
     durationSec: 60,
-    image: 'https://celinaroom.com/wp-content/uploads/2026/01/wall4.png',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi4grcqfqHEJgoWd4RgvlunzEVu__GZx2XsfwFs4nNwDDk0nNcdSM-gVUD8VHqWBf1Tajrwv-8vVE6ilcJd_DcQI6qpjNkvajj_7d5QUiV0ilRY9cHo1N84W8EhGGoTnYYLAxIrwF5ZVoXY4yYjyqcG96PMZ-uLwGuDLR5z5OiOTS7yT_DqrhjQh-wCgdg/s1024/wall4.png',
     difficulty: 'Moyen'
   },
   {
