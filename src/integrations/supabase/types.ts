@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      game_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string | null
+          reward: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          reward?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          reward?: number
+        }
+        Relationships: []
+      }
       game_earnings: {
         Row: {
           amount: number
@@ -154,6 +181,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      used_codes: {
+        Row: {
+          code_id: string
+          id: string
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          code_id: string
+          id?: string
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          code_id?: string
+          id?: string
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "used_codes_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "game_codes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_stats: {
         Row: {
