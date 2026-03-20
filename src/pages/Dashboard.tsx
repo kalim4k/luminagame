@@ -42,6 +42,7 @@ import { GameCard } from '@/components/games/GameCard';
 import { GameSession } from '@/components/games/GameSession';
 import { GameBlockedModal } from '@/components/games/GameBlockedModal';
 import TriumphGame, { getTriumphPendingEarnings, clearTriumphSession } from '@/components/games/TriumphGame';
+import ForestMysteryGame from '@/components/games/ForestMysteryGame';
 import { SocialChat } from '@/components/social/SocialChat';
 import { NotificationSettings } from '@/components/profile/NotificationSettings';
 import { AdminBroadcastButton } from '@/components/profile/AdminBroadcastButton';
