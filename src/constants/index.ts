@@ -132,12 +132,12 @@ export const MOCK_USER: UserProfile = {
 };
 
 export const PAYMENT_PROVIDERS = {
-  'MTN Money': 'https://celinaroom.com/wp-content/uploads/2026/01/mtn-1-Copie-2.jpg',
-  'Paypal': 'https://celinaroom.com/wp-content/uploads/2026/01/paypal1.png',
-  'Orange Money': 'https://celinaroom.com/wp-content/uploads/2026/01/Orange-Money-recrute-pour-ce-poste-22-Mars-2023-Copie.png',
-  'Moov Money': 'https://celinaroom.com/wp-content/uploads/2026/01/Moov_Money_Flooz-Copie.png',
-  'Mix By Yass': 'https://celinaroom.com/wp-content/uploads/2026/01/mix-by-yass.jpg',
-  'Wave': 'https://celinaroom.com/wp-content/uploads/2026/01/wave-Copie.png',
+  'MTN Money': 'https://ysbiedwkakdqadxtuwab.supabase.co/storage/v1/object/public/uploads/73ceff4e-a60e-46d0-ade3-292133629a7a.jpg',
+  'Paypal': 'https://ysbiedwkakdqadxtuwab.supabase.co/storage/v1/object/public/uploads/8cf1bfef-76e2-4c1b-a57d-74b3a39e6db1.png',
+  'Orange Money': 'https://ysbiedwkakdqadxtuwab.supabase.co/storage/v1/object/public/uploads/7b451d8c-d330-480a-b731-80a611b8d090.png',
+  'Moov Money': 'https://ysbiedwkakdqadxtuwab.supabase.co/storage/v1/object/public/uploads/22d27599-04ae-41da-90da-0037542b9dd4.png',
+  'Mix By Yass': 'https://ysbiedwkakdqadxtuwab.supabase.co/storage/v1/object/public/uploads/b97d7539-370a-42fb-81a4-6171a1c00e95.jpg',
+  'Wave': 'https://ysbiedwkakdqadxtuwab.supabase.co/storage/v1/object/public/uploads/a8d55466-5d3f-4390-a52c-5c0183b659f2.png',
 };
 
 export const TRANSACTIONS: Transaction[] = [
