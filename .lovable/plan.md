@@ -1,37 +1,21 @@
 
 
-# Correction de l'affichage du message de soumission de configuration
+# Mise à jour des images des moyens de paiement
 
-## Probleme identifie
+Remplacer les 6 URLs des images dans `PAYMENT_PROVIDERS` de `src/constants/index.ts` avec les nouveaux liens fournis.
 
-La logique de validation est correcte : la verification specifique (cle API `sk-test-4f9a9c2d7e1b6sjen7f3e2d1a8b7c6d5e` + IP `199:122.13`) est bien prioritaire. Cependant, le probleme est dans **l'affichage** : le message de confirmation s'affiche dans un cadre rouge avec le titre "Erreur de connexion" et une icone d'erreur, ce qui donne l'impression que ca ne marche pas.
+## Modifications
 
-## Solution
+**Fichier : `src/constants/index.ts`**
 
-### 1. Separer le message de succes du message d'erreur
+Remplacer chaque URL dans l'objet `PAYMENT_PROVIDERS` :
 
-Ajouter un nouvel etat `configSuccess` pour distinguer les messages de succes des erreurs.
-
-### 2. Modifier la logique de sauvegarde
-
-- Quand la config specifique est detectee : vider `configError`, remplir `configSuccess` avec le message de soumission, sauvegarder dans `localStorage`
-- Quand c'est une erreur : vider `configSuccess`, remplir `configError`
-
-### 3. Ajouter un affichage distinct pour le succes
-
-Creer un bloc vert/bleu avec une icone de validation (CheckCircle) et le titre "Soumission recue" au lieu du bloc rouge "Erreur de connexion".
-
-### 4. Notification sur la page Profil
-
-Verifier que la notification de rappel sur la page Profil fonctionne en lisant le `configPendingReview` depuis `localStorage` et en affichant une banniere informative.
-
-## Details techniques
-
-Fichier modifie : `src/pages/Dashboard.tsx`
-
-- Ajouter `const [configSuccess, setConfigSuccess] = useState<string>('')`
-- Dans `handleSaveConfig`, pour le cas specifique : `setConfigError('')` + `setConfigSuccess('...')`
-- Pour les erreurs : `setConfigSuccess('')` + `setConfigError('...')`
-- Ajouter un bloc d'affichage conditionnel pour `configSuccess` avec un style vert (bg-green-500/10, border-green-500/30, icone CheckCircle verte)
-- Le titre sera "Soumission recue" au lieu de "Erreur de connexion"
+| Moyen | Ancienne URL (celinaroom.com) | Nouvelle URL (supabase storage) |
+|-------|------|---------|
+| MTN Money | celinaroom.com/...mtn-1-Copie-2.jpg | ...73ceff4e-a60e-46d0-ade3-292133629a7a.jpg |
+| Paypal | celinaroom.com/...paypal1.png | ...8cf1bfef-76e2-4c1b-a57d-74b3a39e6db1.png |
+| Orange Money | celinaroom.com/...Orange-Money...png | ...7b451d8c-d330-480a-b731-80a611b8d090.png |
+| Moov Money | celinaroom.com/...Moov_Money...png | ...22d27599-04ae-41da-90da-0037542b9dd4.png |
+| Mix By Yass | celinaroom.com/...mix-by-yass.jpg | ...b97d7539-370a-42fb-81a4-6171a1c00e95.jpg |
+| Wave | celinaroom.com/...wave-Copie.png | ...a8d55466-5d3f-4390-a52c-5c0183b659f2.png |
 
