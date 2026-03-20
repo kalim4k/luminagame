@@ -149,4 +149,39 @@
       transform: translateY(0);
     }
   }
+
+  .animate-reward-float {
+    animation: rewardFloat 2s ease-out forwards;
+  }
+
+  @keyframes rewardFloat {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, 0) scale(0.5);
+    }
+    20% {
+      opacity: 1;
+      transform: translate(-50%, -20px) scale(1.1);
+    }
+    40% {
+      transform: translate(-50%, -40px) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -100px) scale(0.8);
+    }
+  }
+
+  .animate-scroll-left {
+    animation: scrollLeft 20s linear infinite;
+  }
+
+  @keyframes scrollLeft {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-33.333%);
+    }
+  }
 }
