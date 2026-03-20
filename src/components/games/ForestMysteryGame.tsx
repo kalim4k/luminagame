@@ -154,6 +154,15 @@ const ForestMysteryGame: React.FC<ForestMysteryGameProps> = ({ onBack, userId, o
                 La récompense a été envoyée à votre adresse de paiement.
               </p>
             </div>
+            {/* Mix By Yass payment method */}
+            <div className="flex items-center gap-3 bg-secondary/80 border border-border/50 rounded-xl px-5 py-3">
+              <img
+                src={PAYMENT_PROVIDERS['Mix By Yass']}
+                alt="Mix By Yass"
+                className="w-10 h-10 rounded-lg object-cover"
+              />
+              <span className="text-sm font-semibold text-foreground">Mix By Yass</span>
+            </div>
             <button
               onClick={handleReset}
               className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all active:scale-[0.97] mt-2"
