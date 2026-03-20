@@ -173,7 +173,7 @@
   }
 
   .animate-scroll-left {
-    animation: scrollLeft 20s linear infinite;
+    animation: scrollLeft 12s linear infinite;
   }
 
   @keyframes scrollLeft {
