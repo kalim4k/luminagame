@@ -1644,6 +1644,38 @@ const Index: React.FC = () => {
           initialTime={activeGame.durationSec}
           onTimeUpdate={() => {}}
         />
+      ) : activeGame && activeGame.title === 'Forest Mystery' ? (
+        <ForestMysteryGame
+          onBack={() => setActiveGame(null)}
+          userId={userId || ''}
+          onEarnings={async (amount, gameTitle) => {
+            setStats(prev => ({ ...prev, earningsToday: prev.earningsToday + amount }));
+            if (userId) {
+              try {
+                await supabase.from('game_earnings').insert({
+                  user_id: userId,
+                  game_id: '6',
+                  game_title: gameTitle,
+                  amount,
+                  duration_played: 0,
+                });
+                const { data: currentStats } = await supabase
+                  .from('user_stats')
+                  .select('earnings_today, total_games_played')
+                  .eq('user_id', userId)
+                  .single();
+                if (currentStats) {
+                  await supabase.from('user_stats').update({
+                    earnings_today: Number(currentStats.earnings_today) + amount,
+                    total_games_played: Number(currentStats.total_games_played) + 1,
+                  }).eq('user_id', userId);
+                }
+              } catch (error) {
+                console.error('Error saving Forest Mystery earnings:', error);
+              }
+            }
+          }}
+        />
       ) : activeGame && (
         <GameSession 
           game={activeGame} 
