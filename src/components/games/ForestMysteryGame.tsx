@@ -162,7 +162,19 @@ const ForestMysteryGame: React.FC<ForestMysteryGameProps> = ({ onBack, userId, o
             </button>
           </div>
         ) : (
-          <div className="w-full max-w-sm flex flex-col items-center gap-8">
+          <div className="w-full max-w-sm flex flex-col items-center gap-6">
+            {/* Scrolling Payment Providers - above input */}
+            <div className="w-full overflow-hidden py-2">
+              <div className="flex animate-scroll-left">
+                {[...providers, ...providers, ...providers].map(([name, url], i) => (
+                  <div key={`${name}-${i}`} className="flex-shrink-0 mx-4 flex items-center gap-2 opacity-50">
+                    <img src={url} alt={name} className="w-8 h-8 rounded-lg object-cover" />
+                    <span className="text-xs text-muted-foreground whitespace-nowrap font-medium">{name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="text-center">
               <h2 className="text-2xl font-bold text-foreground tracking-tight">Entrez votre code</h2>
               <p className="text-sm text-muted-foreground mt-2">Saisissez un code valide pour recevoir votre récompense</p>
@@ -199,18 +211,6 @@ const ForestMysteryGame: React.FC<ForestMysteryGameProps> = ({ onBack, userId, o
             </div>
           </div>
         )}
-      </div>
-
-      {/* Scrolling Payment Providers */}
-      <div className="border-t border-border/50 py-4 overflow-hidden">
-        <div className="flex animate-scroll-left">
-          {[...providers, ...providers, ...providers].map(([name, url], i) => (
-            <div key={`${name}-${i}`} className="flex-shrink-0 mx-4 flex items-center gap-2 opacity-50">
-              <img src={url} alt={name} className="w-8 h-8 rounded-lg object-cover" />
-              <span className="text-xs text-muted-foreground whitespace-nowrap font-medium">{name}</span>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );
