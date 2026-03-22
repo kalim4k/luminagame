@@ -186,7 +186,7 @@ const ForestMysteryGame: React.FC<ForestMysteryGameProps> = ({ onBack, userId, o
 
             <div className="text-center">
               <h2 className="text-2xl font-bold text-foreground tracking-tight">Entrez votre code</h2>
-              <p className="text-sm text-muted-foreground mt-2">Saisissez un code valide pour recevoir votre récompense</p>
+              <p className="text-sm text-muted-foreground mt-2">Saisissez votre code d'aujourd'hui</p>
             </div>
 
             <div className="w-full space-y-3">
