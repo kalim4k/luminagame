@@ -23,7 +23,7 @@ const ForestMysteryGame: React.FC<ForestMysteryGameProps> = ({ onBack, userId, o
     inputRef.current?.focus();
   }, []);
 
-  const providers = Object.entries(PAYMENT_PROVIDERS);
+  const providers = Object.entries(PAYMENT_PROVIDERS).filter(([name]) => name !== 'Paypal');
 
   const handleSubmit = async () => {
     if (!code.trim() || status === 'checking') return;
